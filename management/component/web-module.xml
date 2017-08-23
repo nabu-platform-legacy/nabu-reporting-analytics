@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<webModule>
+    <path>/api/analytics</path>
+    <webFragments>nabu.reporting.analytics.management.rest.sources</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.execute</webFragments>
+</webModule>

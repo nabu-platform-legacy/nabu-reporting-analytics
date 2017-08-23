@@ -1,0 +1,3 @@
+<structure name="dataSetList">
+    <structure definition="nabu.reporting.analytics.types.DataSet" maxOccurs="unbounded" minOccurs="0" name="dataSets"/>
+</structure>

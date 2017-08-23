@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>GET</method>
+    <path>/sources</path>
+    <role>manager</role>
+    <output>nabu.reporting.analytics.management.types.sourceList</output>
+    <configurationType>nabu.reporting.analytics.management.configuration</configurationType>
+    <lenient>false</lenient>
+</restInterface>

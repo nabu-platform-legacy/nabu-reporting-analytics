@@ -1,0 +1,3 @@
+<structure name="resultSetList">
+    <structure definition="nabu.reporting.analytics.types.ResultSet" maxOccurs="unbounded" minOccurs="0" name="resultSets"/>
+</structure>

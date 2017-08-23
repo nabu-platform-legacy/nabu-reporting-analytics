@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>POST</method>
+    <path>/source</path>
+    <role>manager</role>
+    <input>nabu.reporting.analytics.management.types.setList</input>
+    <output>nabu.reporting.analytics.management.types.resultList</output>
+    <lenient>false</lenient>
+</restInterface>
