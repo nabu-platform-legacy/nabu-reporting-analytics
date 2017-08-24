@@ -4,23 +4,83 @@ letters = series("a", "b", "c", "d", "e", "f", "h", "i", "j", "k", "l", "m", "n"
 colorify = lambda
 	for (i : size(colors))
 		echo("hah .ct-chart .ct-series-" + letters[i] + " { fill: #" + colors[i] + "; background-color: #" + colors[i] + "; }")
-		echo(".ct-chart .ct-point-" + letters[i] + " { stroke: #" + colors[i] + "; }")
+		echo(".ct-chart .ct-series-" + letters[i] + " .ct-point { stroke: #" + colors[i] + "; fill: #" + colors[i] + ";}")
 		echo(".ct-chart .ct-series-" + letters[i] + " .ct-area { fill: #" + colors[i] + "; fill-opacity: 0.1; }")
-		echo(".ct-chart .ct-series-" + letters[i] + " .ct-line { stroke: #" + colors[i] + "; }")
+		echo(".ct-chart .ct-series-" + letters[i] + " .ct-line { stroke: #" + colors[i] + "; stroke-width: 3px }")
 		echo(".ct-chart .ct-series-" + letters[i] + " .ct-bar { stroke: #" + colors[i] + "; }")
-		echo(".ct-legend .ct-series-" + i + " { color: #" + colors[i] + "; }")
+		echo(".ct-legend .ct-series-" + i + " { color: #aaa; font-size: 0.8rem; text-align: left; }")
 		echo(".ct-chart .ct-series-" + letters[i] + " .ct-slice-pie { fill: #" + colors[i] + "; fill-opacity: 1; }")
-		echo(".ct-chart .ct-series-" + letters[i] + " .ct-slice-donut { stroke: #" + colors[i] + ";  }")
+		echo(".ct-chart .ct-series-" + letters[i] + " .ct-slice-donut { stroke: #" + colors[i] + "; stroke-width: 60px !important; }")
 		echo(".ct-legend .ct-series-" + i + ":before { background-color: #" + colors[i] + "; }")
 		
 
 colorify()
 
+.ct-legend {
+	li {
+		&:before {
+			margin-right: 2rem;
+			left: -0.7rem !important;
+		}
+	}
+}
+
 .analyticsReport {
+	
+	&.editing {
+		.row {
+			border: ${border/apply()};
+			border-style: none none dashed none;
+			padding: 1rem;
+		}
+	}
+	
 	.row {
+		min-height: 10rem;
+		
+		> .actions {
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			button {
+				padding: 0.3rem;
+			}
+		}
+		
 		flex-wrap: nowrap;
 		align-items: stretch;
 		.card {
+			
+			h2 {
+				font-size: 0.9rem;
+				padding: 0;
+				font-weight: normal;
+				padding-bottom: 0.5rem;
+				margin-bottom: 1rem;
+				border: ${border/apply()};
+				border-style: none none dashed none;
+				overflow: visible;
+			}
+
+			.n-info {
+				.n-icon {
+					color: #aaa;
+				}
+				.n-info-content {
+					font-size: 0.8rem;
+					z-index: 100000;
+					left: -50%;
+				}
+			}
+			
+			button {
+				&.delete {
+					padding: 0.1rem;
+					top: 0;
+					right: 0;
+				}
+			}
+			
 			position: relative;
 			width: auto;
 			max-width: inherit;
@@ -36,8 +96,8 @@ colorify()
 			.ct-chart {
 				position: relative;
 				.ct-point {
-					stroke-width: 3;
-					fill-opacity: 0;
+					stroke-width: 1px;
+					fill-opacity: 1;
 				}
 				.chartist-tooltip {
 					font-size: 0.8rem;
@@ -97,33 +157,54 @@ colorify()
 				}
 				
 			}
+			.entry-table {
+				width: 100%;				
+			}
 			table {
-				display: inline;
 				box-shadow: none;
 				border-style: none;
+				width: 99%;
 				tbody {
 					border: ${border/apply()};
 					border-style: solid solid none none;
-				}
-				thead {
-					td {
-						cursor: pointer;
-					}
-				}
-				tfoot {
-					display: flex;
-					text-align: center;
-					.n-form-component {
-						margin: 1rem 0;
-						
-						&.limit {
-							input {
-								width: 4rem;
-								text-align: center;
-							}
+					border-color: #5295bb;
+					tr {
+						background-color: #fff;
+						&:nth-child(even) {
+							background-color: rgba(82, 149, 187, 0.1);
+						}
+						td {
+							border-color: #5295bb;
 						}
 					}
 				}
+				thead {
+					td {
+						background-color: #5295bb;
+						cursor: pointer;
+						color: #fff;
+						border-color: #5295bb;
+					}
+				}
+			}
+			.options {
+				display: flex;
+				text-align: center;
+				.n-form-component {
+					margin: 1rem 0;
+					
+					&.limit {
+						input {
+							width: 4rem;
+							text-align: center;
+						}
+					}
+				}
+			}
+			
+			.download {
+				position: absolute;
+				left: 0;
 			}
 			
 			.actions {
@@ -133,6 +214,16 @@ colorify()
 					border: none;
 					margin: 0.3rem 0;
 				}
+			}
+			
+			.filter {
+				background-color: #fff;
+				border: ${border/apply()};
+				padding: 1rem;
+				position: absolute;
+				font-size: 0.8rem;
+				top: 100%;
+				left: 20%;
 			}
 		}
 		

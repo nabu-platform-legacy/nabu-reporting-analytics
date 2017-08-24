@@ -1,0 +1,57 @@
+<sequence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" disabled="false" id="e84876eb-57e7-40d4-842c-88ed861be6f4">
+	<steps xsi:type="be.nabu.libs.services.vm.step.Map" disabled="false" comment="Map output" id="80611d47-f6ca-4c18-b2b9-d8177752730d">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="833f7d2b-00e0-4d8a-b62c-1bf41f17506b" serviceId="nabu.frameworks.datastore.Services.properties" resultName="result5f4e5a9f19e543108102c8cb706084b1" invocationOrder="0" temporaryMapping="true" y="10" x="30">
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="7e72a0e4-c771-4185-a432-d70077f9ea7d" fixedValue="false" optional="false" mask="false">
+				<from>input/query/uri[0]</from>
+				<to>uri</to>
+			</steps>
+			<asynchronous>false</asynchronous>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="94be7d26-60f0-49b6-abeb-19befef2baaf" fixedValue="false" optional="false" mask="false">
+			<from>result5f4e5a9f19e543108102c8cb706084b1/properties/size</from>
+			<to>output/header/contentLength</to>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="1f5b5a1f-57e6-4ecc-9141-b116933a6fd3" serviceId="nabu.cms.attachment.services.formatDate" resultName="result905781b93a29475f83b2f185c3360ced" invocationOrder="1" temporaryMapping="true" y="300" x="271">
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="c7cb0f8d-5beb-4f0f-b9a4-910eaff72ff1" fixedValue="false" optional="false" mask="false">
+				<from>result5f4e5a9f19e543108102c8cb706084b1/properties/lastModified</from>
+				<to>date</to>
+			</steps>
+			<asynchronous>false</asynchronous>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="12f7deea-bd0b-40ce-a1d8-e047097a3535" fixedValue="false" optional="false" mask="false">
+			<from>result905781b93a29475f83b2f185c3360ced/formattedDate</from>
+			<to>output/header/lastModified</to>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="a1be1343-c878-448a-b600-a5bf557bc89a" fixedValue="false" optional="false" mask="false">
+			<from>result5f4e5a9f19e543108102c8cb706084b1/properties/name</from>
+			<to>name</to>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="bbd5b665-bcf5-4a32-bb0c-294616adab23" fixedValue="false" optional="false" mask="false">
+			<from>result5f4e5a9f19e543108102c8cb706084b1/properties/contentType</from>
+			<to>output/header/contentType</to>
+		</steps>
+	</steps>
+	<steps xsi:type="be.nabu.libs.services.vm.step.Map" disabled="false" comment="Set content disposition" id="b0fea395-ccf8-4d88-8f6b-84831ba312d0">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="42f68db0-07c8-4bd1-a9ef-52aa9e80cbf5" fixedValue="true" optional="false" mask="false">
+			<from>='attachment;filename="' + name + '"'</from>
+			<to>output/header/contentDisposition</to>
+		</steps>
+	</steps>
+	<steps xsi:type="be.nabu.libs.services.vm.step.Map" disabled="false" id="c87a7c58-d10d-44ba-8e90-719ab59e765f">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="17f9ca01-c5be-4cbc-8bac-9d353d5da53e" serviceId="nabu.frameworks.datastore.Services.retrieve" resultName="result3c2e405891c84bdaa9e302803f886374" invocationOrder="0" temporaryMapping="true" y="117" x="39">
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="ea0d9b9d-5eee-4c6c-b344-e48af5b5e1a5" fixedValue="false" optional="false" mask="false">
+				<from>input/query/uri[0]</from>
+				<to>uri</to>
+			</steps>
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="44827da3-8e26-4a0e-b004-59772aac6448" fixedValue="true" optional="false" mask="false">
+				<from>true</from>
+				<to>delete</to>
+			</steps>
+			<asynchronous>false</asynchronous>
+		</steps>
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="0562113d-585c-4cd6-9516-73b729336cc6" fixedValue="false" optional="false" mask="false">
+			<from>result3c2e405891c84bdaa9e302803f886374/stream</from>
+			<to>output/content</to>
+		</steps>
+	</steps>
+</sequence>

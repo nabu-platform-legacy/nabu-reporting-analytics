@@ -3,4 +3,6 @@
     <path>/api/analytics</path>
     <webFragments>nabu.reporting.analytics.management.rest.sources</webFragments>
     <webFragments>nabu.reporting.analytics.management.rest.execute</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.store</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.retrieve</webFragments>
 </webModule>

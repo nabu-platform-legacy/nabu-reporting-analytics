@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>GET</method>
+    <path>/retrieve</path>
+    <queryParameters>uri</queryParameters>
+    <responseHeaders>Content-Type, Content-Length, Last-Modified, Content-Disposition</responseHeaders>
+    <role>manager</role>
+    <outputAsStream>true</outputAsStream>
+    <lenient>false</lenient>
+</restInterface>

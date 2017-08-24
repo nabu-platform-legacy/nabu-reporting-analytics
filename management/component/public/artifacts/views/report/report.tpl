@@ -1,5 +1,5 @@
 <template id="analyticsReport">
-	<div class="analyticsReport">
+	<div class="analyticsReport" :class="{'editing': editing}">
 		<div class="page-menu">
 			<h1 class="title">{{ report.name }}</h1>
 			<button v-if="!editing" class="info" @click="editing = true"><span class="n-icon n-icon-pencil"></span>Edit</button>
@@ -10,9 +10,20 @@
 		</div>
 		<div v-for="row in report.rows" class="row" :class="'row-' + row.entries.length">
 			<div v-for="entry in row.entries" class="card" :class="'type-' + entry.type">
-				<h2>{{ entry.name }}
+				<h2 v-auto-close="function() { toggleFilter(entry, false) }">
+					<div class="download" v-if="entry.data && entry.data.length && entry.type != 'GAUGE'">
+						<span class="n-icon n-icon-table" title="Download as CSV" @click="download(entry, 'csv')"></span>
+						<span class="n-icon n-icon-code" title="Download as XML" @click="download(entry, 'xml')"></span>
+						<span class="n-icon n-icon-download" title="Download as JSON" @click="download(entry, 'json')"></span>
+					</div>
+					<span>{{ entry.name }}</span> <n-info v-if="entry.description">{{ entry.description }}</n-info>
+					<span class="n-icon n-icon-search" @click="toggleFilter(entry)" v-if="entry.data && entry.data.length && entry.data[0].parameters && entry.data[0].parameters.length"></span>
+					<div class="filter" v-if="entry.showFilter">
+						<n-form-text v-timeout:input="function() { loadPage(entry.data[0], 0, true) }" v-for="parameter in entry.data[0].parameters" v-model="parameter.value" :label="parameter.key" :required="!parameter.optional" />
+					</div>
 					<button v-if="editing" @click="$confirm({ message: 'Are you sure you want to delete this entry?', type: 'question', ok: 'Delete' }).then(function() { row.entries.splice(row.entries.indexOf(entry), 1) });$event.stopPropagation()" class="delete"></button></h2>
-				<div v-if="entry.type == 'TABULAR'">
+				
+				<div v-if="entry.type == 'TABULAR'" class="entry-table">
 					<table class="classic" v-for="data in entry.data" v-if="data.resultSet && data.resultSet.results && data.resultSet.results.length">
 						<thead>
 							<tr>
@@ -27,11 +38,11 @@
 								<td v-for="key in result">{{ key }}</td>
 							</tr>
 						</tbody>
-						<tfoot>
-							<n-form-text class="limit" v-model="data.limit" v-if="editing" v-timeout:input="function() { loadPage(data, 0, true) }"/>
-							<n-paging :value="data.resultSet.page.current" :total="data.resultSet.page.total" :load="loadPage.bind(this, data)"/>
-						</tfoot>
 					</table>
+					<div class="options" v-if="entry.data && entry.data.length && entry.data[0].resultSet">
+						<n-form-text class="limit" v-model="entry.data[0].limit" v-if="editing" v-timeout:input="function() { loadPage(entry.data[0], 0, true) }"/>
+						<n-paging :value="entry.data[0].resultSet.page.current" :total="entry.data[0].resultSet.page.total" :load="loadPage.bind(this, entry.data[0])"/>
+					</div>
 					<div class="actions" v-if="editing">
 						<button class="info" @click="addDataSource(entry, true)">Set Data Source</button>
 					</div>

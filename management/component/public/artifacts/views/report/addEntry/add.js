@@ -24,6 +24,7 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 		create: function() {
 			this.$resolve({
 				name: this.name,
+				description: this.description,
 				created: new Date().toISOString(),
 				type: this.type,
 				subType: this.subType,

@@ -67,6 +67,24 @@ application.views.AnalyticsReport = Vue.extend({
 		});
 	},
 	methods: {
+		toggleFilter: function(entry, value) {
+			if (typeof(entry.showFilter) == "undefined") {
+				Vue.set(entry, "showFilter", typeof(value) == "undefined" ? true : value);
+			}
+			else {
+				entry.showFilter = typeof(value) == "undefined" ? !entry.showFilter : value;
+			}
+		},
+		download: function(entry, type) {
+			var self = this;
+			console.log("type is", type);
+			self.$services.swagger.execute("nabu.reporting.analytics.management.rest.store", { body: { dataSets: entry.data, type: type }}).then(function(response) {
+				if (response.uri) {
+					var parameters = self.$services.swagger.parameters("nabu.reporting.analytics.management.rest.retrieve", { uri: response.uri });
+					window.location = parameters.url;
+				}
+			});
+		},
 		addRow: function() {
 			if (!this.report.rows) {
 				Vue.set(this.report, "rows", []);
@@ -88,7 +106,7 @@ application.views.AnalyticsReport = Vue.extend({
 		addDataSource: function(entry, clear) {
 			var self = this;
 			return this.$prompt(function() {
-				return new application.views.AnalyticsReportAddDataSource({ data: { type: entry.type, named: !clear }});
+				return new application.views.AnalyticsReportAddDataSource({ data: { type: entry.type, named: !clear, limited: clear }});
 			}).then(function(source) {
 				if (!entry.data) {
 					Vue.set(entry, "data", []);

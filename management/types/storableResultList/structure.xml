@@ -1,0 +1,3 @@
+<structure name="root">
+    <structure definition="java.lang.Object" maxOccurs="unbounded" minOccurs="0" name="results"/>
+</structure>

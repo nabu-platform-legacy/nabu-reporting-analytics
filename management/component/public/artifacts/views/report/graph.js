@@ -98,7 +98,8 @@ Vue.component("n-analytics-graph", {
 			
 			if (this.entry.showLegend) {
 				plugins.push(Chartist.plugins.legend({
-					legendNames: this.legends
+					legendNames: this.legends,
+					position: "bottom"
 				}));
 			}
 			
@@ -110,6 +111,12 @@ Vue.component("n-analytics-graph", {
 			else if (this.entry.subType == "BAR" || this.entry.subType == "BAR_STACKED") {
 				constructor = Chartist.Bar;
 			}
+			
+			var lineSmooth = Chartist.Interpolation.simple({
+				divisor: 2
+			});
+			
+			lineSmooth = null;
 			
 		 	var chart = new constructor(newTarget, {
 				labels: self.labels,
@@ -131,9 +138,7 @@ Vue.component("n-analytics-graph", {
 				},
 				//showPoint: false,
 				fullWidth: true,
-				lineSmooth: Chartist.Interpolation.simple({
-					divisor: 2
-				}),
+				lineSmooth: lineSmooth,
 				plugins: plugins
 			});
 			
@@ -142,7 +147,6 @@ Vue.component("n-analytics-graph", {
 				// If the draw event was triggered from drawing a point on the line chart
 				if (data.type === 'point') {
 					// We are creating a new path SVG element that draws a triangle around the point coordinates
-				
 					var letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
 				
 					var circle = new Chartist.Svg('circle', {
