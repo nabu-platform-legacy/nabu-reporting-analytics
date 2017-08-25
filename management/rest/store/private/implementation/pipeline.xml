@@ -5,4 +5,6 @@
     <field minOccurs="0" name="size" type="java.lang.Integer"/>
     <structure definition="nabu.reporting.analytics.management.types.storableResultList" name="resultList"/>
     <field maxOccurs="unbounded" name="uris" type="java.net.URI"/>
+    <structure definition="nabu.reporting.analytics.types.DataSet" minOccurs="0" name="dataSet"/>
+    <field name="name" type="java.lang.String"/>
 </structure>

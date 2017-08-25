@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>GET</method>
+    <path>/report</path>
+    <queryParameters>connectionId</queryParameters>
+    <role>manager</role>
+    <output>nabu.reporting.analytics.management.types.reportList</output>
+    <lenient>false</lenient>
+</restInterface>

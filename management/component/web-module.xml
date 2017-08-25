@@ -5,4 +5,7 @@
     <webFragments>nabu.reporting.analytics.management.rest.execute</webFragments>
     <webFragments>nabu.reporting.analytics.management.rest.store</webFragments>
     <webFragments>nabu.reporting.analytics.management.rest.retrieve</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.report.merge</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.report.list</webFragments>
+    <webFragments>nabu.reporting.analytics.management.rest.report.delete</webFragments>
 </webModule>

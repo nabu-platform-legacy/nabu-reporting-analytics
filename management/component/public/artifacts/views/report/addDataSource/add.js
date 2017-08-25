@@ -10,7 +10,9 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 			limit: 10,
 			named: true,
 			properties: [],
-			limited: true
+			limited: true,
+			connectionId: null,
+			groupBy: null
 		};
 	},
 	activate: function(done) {
@@ -23,8 +25,9 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 	computed: {
 		filteredSources: function() {
 			var filtered = [];
+			console.log("TYPE IS", this.type);
 			for (var i = 0; i < this.sources.length; i++) {
-				if (this.sources[i].type == this.type) {
+				if (this.sources[i].types.indexOf(this.type) >= 0) {
 					filtered.push(this.sources[i]);
 				}
 			}
@@ -41,7 +44,9 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 				limit: this.limited ? this.limit : null,
 				offset: 0,
 				parameters: this.properties,
-				resultSet: null
+				connectionId: this.connectionId,
+				resultSet: null,
+				groupBy: this.groupBy
 			});
 		},
 		validate: function() {
@@ -54,11 +59,12 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 		source: function(newValue) {
 			this.properties.splice(0, this.properties.length);
 			if (newValue.input) {
-				nabu.utils.arrays.merge(this.properties, newValue.input);
-				for (var i = 0; i < this.properties.length; i++) {
-					Vue.set(this.properties[i], "key", this.properties[i].name);
-					Vue.set(this.properties[i], "value", null);
-					delete this.properties[i].name;
+				for (var i = 0; i < newValue.input.length; i++) {
+					var object = nabu.utils.objects.clone(newValue.input[i]);
+					object.key = object.name;
+					object.value = null;
+					delete object.name;
+					this.properties.push(object);
 				}
 			}
 		}

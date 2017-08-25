@@ -4,17 +4,20 @@ application.views.AnalyticsReport = Vue.extend({
 		return {
 			report: null,
 			name: null,
-			editing: false
+			editing: false,
+			editable: true
 		}
 	},
 	activate: function(done) {
-		var reports = window.localStorage.nabuAnalyticReports;
-		if (reports) {
-			reports = JSON.parse(reports);
-			for (var i = 0; i < reports.length; i++) {
-				if (reports[i].name == this.name) {
-					this.report = reports[i];
-					break;
+		if (!this.report && this.name) {
+			var reports = window.localStorage.nabuAnalyticReports;
+			if (reports) {
+				reports = JSON.parse(reports);
+				for (var i = 0; i < reports.length; i++) {
+					if (reports[i].name == this.name) {
+						this.report = reports[i];
+						break;
+					}
 				}
 			}
 		}
@@ -30,6 +33,15 @@ application.views.AnalyticsReport = Vue.extend({
 						}
 						if (typeof(entry.showLegend) == "undefined") {
 							Vue.set(entry, "showLegend", false);
+						}
+						if (typeof(entry.showDots) == "undefined") {
+							Vue.set(entry, "showDots", true);
+						}
+						if (typeof(entry.angleLabels) == "undefined") {
+							Vue.set(entry, "angleLabels", false);
+						}
+						if (typeof(entry.formatter) == "undefined") {
+							Vue.set(entry, "formatter", null);
 						}
 						if (entry.data) {
 							nabu.utils.arrays.merge(inputs, entry.data);

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>DELETE</method>
+    <path>/report/{reportId}</path>
+    <queryParameters>connectionId</queryParameters>
+    <role>manager</role>
+    <lenient>false</lenient>
+</restInterface>

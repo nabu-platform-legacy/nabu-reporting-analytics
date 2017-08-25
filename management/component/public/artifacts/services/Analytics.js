@@ -5,7 +5,8 @@ nabu.reporting.Analytics = function Analytics($services) {
 	var self = this;
 	
 	this.state = {
-		sources: null
+		sources: null,
+		reports: []
 	};
 	
 	Vue.observe(this.state, true);

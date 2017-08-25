@@ -94,10 +94,30 @@ colorify()
 			}
 
 			.ct-chart {
+				
+				.ct-label-rotated {
+					.ct-label.ct-horizontal.ct-end {
+						display: block;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						transform: rotate(-30deg);
+						transform-origin: 100% 0;
+						text-align: right;
+						max-height: 1.5em;
+						min-width: 100px;
+						max-width: 100px;
+						font-size: 0.6rem;
+					}
+				}
 				position: relative;
 				.ct-point {
 					stroke-width: 1px;
 					fill-opacity: 1;
+					
+					&.ct-point-hidden {
+						fill-opacity: 0;
+						stroke-width: 0;
+					}
 				}
 				.chartist-tooltip {
 					font-size: 0.8rem;
@@ -137,13 +157,13 @@ colorify()
 				}
 			}
 			&.type-GAUGE {
-				min-height:15rem;
+				min-height:14rem;
 				svg {
-					min-height:17rem;
+					min-height:16rem;
 				}
 			}
 			svg {
-				min-height: 13rem;
+				min-height: 15rem;
 				
 				.ct-axis-title {
 					font-size: 0.8rem;
@@ -205,6 +225,9 @@ colorify()
 			.download {
 				position: absolute;
 				left: 0;
+				span {
+					cursor: pointer;
+				}
 			}
 			
 			.actions {

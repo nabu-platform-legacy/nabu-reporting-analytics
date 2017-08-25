@@ -1,0 +1,18 @@
+<jdbcService xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<inputDefinition>nabu.reporting.analytics.management.types.database.analyticsReport</inputDefinition>
+	<sql>insert into analytics_reports (
+	id,
+	created,
+	modified,
+	name,
+	description,
+	report
+) values (
+	:id,
+	:created,
+	:modified,
+	:name,
+	:description,
+	:report
+)</sql>
+</jdbcService>

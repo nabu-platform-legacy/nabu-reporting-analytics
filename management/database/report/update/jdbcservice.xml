@@ -1,0 +1,9 @@
+<jdbcService xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<inputDefinition>nabu.reporting.analytics.management.types.database.analyticsReport</inputDefinition>
+	<sql>update analytics_reports set
+	modified = :modified,
+	name = :name,
+	description = :description,
+	report = :report
+ where id = :id</sql>
+</jdbcService>

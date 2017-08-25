@@ -1,0 +1,15 @@
+<sequence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" disabled="false" id="46481644-e6bd-4a7d-9880-1c355d1bd37a">
+	<steps xsi:type="be.nabu.libs.services.vm.step.Map" disabled="false" id="42bea27d-f0e6-4496-84c3-190c177bf97a">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="5cd028a5-674a-4729-8f93-9b50856503f6" serviceId="nabu.reporting.analytics.management.database.report.delete" resultName="result9ee34342ec2d4fc986dbef88274bf5b3" invocationOrder="0" temporaryMapping="true" y="72" x="38">
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="e2721f44-292f-4323-851d-26e5eceb177e" optional="false" fixedValue="false" mask="false">
+				<from>input/query/connectionId[0]</from>
+				<to>connection</to>
+			</steps>
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="e5b9fab9-ea92-47af-bdbe-f001579414f0" optional="false" fixedValue="false" mask="false">
+				<from>input/path/reportId</from>
+				<to>parameters[0]/id</to>
+			</steps>
+			<asynchronous>false</asynchronous>
+		</steps>
+	</steps>
+</sequence>

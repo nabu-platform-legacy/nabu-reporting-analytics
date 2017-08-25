@@ -1,0 +1,5 @@
+.analyticsLocalReports {
+	> h2 {
+		text-align: center;
+	}
+}

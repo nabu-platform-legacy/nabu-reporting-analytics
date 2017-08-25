@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<restInterface>
+    <method>PUT</method>
+    <path>/report</path>
+    <queryParameters>connectionId</queryParameters>
+    <role>manager</role>
+    <input>nabu.reporting.analytics.management.types.mergeInput</input>
+    <output>nabu.reporting.analytics.management.types.database.analyticsReport</output>
+    <lenient>false</lenient>
+</restInterface>

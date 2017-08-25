@@ -2,7 +2,7 @@
 	<div class="analyticsReport" :class="{'editing': editing}">
 		<div class="page-menu">
 			<h1 class="title">{{ report.name }}</h1>
-			<button v-if="!editing" class="info" @click="editing = true"><span class="n-icon n-icon-pencil"></span>Edit</button>
+			<button v-if="!editing && editable" class="info" @click="editing = true"><span class="n-icon n-icon-pencil"></span>Edit</button>
 			<button v-if="!editing" ref="copier"><span class="n-icon n-icon-clipboard"></span>Copy to Clipboard</button>
 			<button v-if="editing" class="info" @click="addRow"><span class="n-icon n-icon-plus"></span>Add Row</button>
 			<button v-if="editing" class="success" @click="save"><span class="n-icon n-icon-save"></span>Save</button>
@@ -30,7 +30,8 @@
 								<td @click="sort(data, key)" 
 									v-for="key in Object.keys(data.resultSet.results[0])"><span>{{ key }}</span>
 										<span class="n-icon n-icon-sort-asc" v-if="data.orderBy.indexOf(key) >= 0"></span>
-										<span class="n-icon n-icon-sort-desc" v-if="data.orderBy.indexOf(key + ' desc') >= 0"></span></td>
+										<span class="n-icon n-icon-sort-desc" v-if="data.orderBy.indexOf(key + ' desc') >= 0"></span>
+								</td>
 							</tr>
 						</thead>
 						<tbody>
@@ -54,6 +55,9 @@
 							<n-form-section>
 								<n-form-switch v-model="entry.showAxisTitle" label="Show Axis Title" :edit="true"/>
 								<n-form-switch v-model="entry.showLegend" label="Show Legend" :edit="true"/>
+								<n-form-switch v-model="entry.showDots" label="Show Dots" :edit="true"/>
+								<n-form-switch v-model="entry.angleLabels" label="Angle Labels" :edit="true"/>
+								<n-form-combo v-model="entry.formatter" label="Label Formatter (X)" :items="['date', 'dateTime', 'time']"/>
 							</n-form-section>
 						</n-form>
 						<button class="info" @click="addDataSource(entry).then(function() { entry.drawn = false })">Add Data Source</button>

@@ -1,0 +1,5 @@
+<structure name="report">
+    <field name="name" type="java.lang.String"/>
+    <field minOccurs="0" name="description" type="java.lang.String"/>
+    <field name="report" type="java.lang.String"/>
+</structure>
