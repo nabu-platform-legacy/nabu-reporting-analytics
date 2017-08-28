@@ -2,7 +2,7 @@ application.configuration.modules.push(function($services) {
 	var reports = window.localStorage.nabuAnalyticReports;
 	var actions = [];
 	actions.push({
-		title: "Local Reports",
+		title: "Reports",
 		handler: function() {
 			$services.router.route("analyticsLocalReports");
 		}

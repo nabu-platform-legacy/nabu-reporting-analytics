@@ -2,4 +2,9 @@
 	> h2 {
 		text-align: center;
 	}
+	.card {
+		h2 {
+			cursor: pointer;
+		}
+	}
 }
