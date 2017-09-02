@@ -9,9 +9,14 @@
 				
 				<n-form-combo v-if="type == 'SERIES' && source && source.output && source.output.length > 2" label="Group By" v-model="groupBy" :items="source.output.map(function(x) { return x.name })"/>
 				
+				<n-form-section v-for="reportProperty in boundProperties" v-if="properties && properties.length">
+					<n-form-combo v-model="reportProperty.value" v-timeout:input.form="validate" :label="reportProperty.key" :items="properties.map(function(x) { return x.key })" />
+				</n-form-section>
+				
 				<n-form-section v-for="property in properties">
-					<n-form-text v-timeout:input.form="validate" :label="property.key" :required="!property.optional"
-						v-model="property.value"/>
+					<n-form-text v-timeout:input.form="validate" :label="property.key" :required="!property.optional && !isBound(property)"
+						v-model="property.value"
+						v-if="!isBound(property)"/>
 				</n-form-section>
 			</n-form-section>
 			<footer class="actions">

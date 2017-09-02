@@ -4,7 +4,7 @@ application.configuration.modules.push(function($services) {
 	actions.push({
 		title: "Reports",
 		handler: function() {
-			$services.router.route("analyticsLocalReports");
+			$services.router.route("analyticsReports");
 		}
 	});
 
@@ -14,25 +14,46 @@ application.configuration.modules.push(function($services) {
 	});
 	
 	$services.router.register({
-		alias: "analyticsLocalReports",
+		alias: "analyticsReports",
 		enter: function(parameters) {
-			return new application.views.AnalyticsLocalReports({ data: parameters });
+			return new application.views.AnalyticsReports({ data: parameters });
 		},
 		url: "/analytics/reports"
 	});
+	
 	$services.router.register({
-		alias: "analyticsReport",
+		alias: "analyticsLocalReport",
+		services: ["analytics.reports.local"],
 		enter: function(parameters) {
-			return new application.views.AnalyticsReport({ data: parameters });
+			var report = $services.analytics.reports.local.get(parameters.name);
+			if (!report) {
+				throw "Could not find local report: " + parameters.name;
+			}
+			return new application.views.AnalyticsReport({ data: { report: report, values: parameters.values, type: "local" } });
 		},
-		url: "/analytics/report/{name}"
-	});
-	$services.router.register({
-		alias: "analyticsDatabaseReport",
-		enter: function(parameters) {
-			return new application.views.AnalyticsReport({ data: parameters });
-		}
+		url: "/analytics/report/local/{name}"
 	});
 	
-	return $services.$register(nabu.reporting.Analytics);
+	$services.router.register({
+		alias: "analyticsDatabaseReport",
+		services: ["analytics.reports.database"],
+		enter: function(parameters) {
+			var report = $services.analytics.reports.database.get(parameters.name);
+			if (!report) {
+				throw "Could not find database report: " + parameters.name;
+			}
+			return new application.views.AnalyticsReport({ data: { report: JSON.parse(report.report), editable: false, values: parameters.values, type: "database" } });
+		},
+		url: "/analytics/report/database/{name}"
+	});
+	
+	return $services.$register({ 
+		analytics: {
+			data: nabu.analytics.Data,
+			reports: {
+				database: nabu.analytics.DatabaseReports,
+				local: nabu.analytics.LocalReports
+			}
+		}
+	});
 });

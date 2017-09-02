@@ -1,10 +1,10 @@
 application.views.AnalyticsReportAddDataSource = Vue.extend({
 	template: "#analyticsReportAddDataSource",
+	services: ["analytics.data"],
 	data: function() {
 		return {
 			name: null,
 			valid: false, 
-			sources: null,
 			source: null,
 			orderBy: [],
 			limit: 10,
@@ -12,23 +12,29 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 			properties: [],
 			limited: true,
 			connectionId: null,
-			groupBy: null
+			groupBy: null,
+			// properties for this source that are bound to report-level properties
+			boundProperties: [],
+			// properties available from the report
+			reportProperties: []
 		};
 	},
-	activate: function(done) {
+	created: function() {
 		var self = this;
-		this.$services.analytics.sources().then(function(sources) {
-			Vue.set(self, "sources", sources);
-			done();
-		});
+		if (this.reportProperties) {
+			for (var i = 0; i < this.reportProperties.length; i++) {
+				var property = nabu.utils.objects.clone(this.reportProperties[i]);
+				property.value = null;
+				this.boundProperties.push(property);
+			}
+		}
 	},
 	computed: {
 		filteredSources: function() {
 			var filtered = [];
-			console.log("TYPE IS", this.type);
-			for (var i = 0; i < this.sources.length; i++) {
-				if (this.sources[i].types.indexOf(this.type) >= 0) {
-					filtered.push(this.sources[i]);
+			for (var i = 0; i < this.$services.analytics.data.sources.length; i++) {
+				if (this.$services.analytics.data.sources[i].types.indexOf(this.type) >= 0) {
+					filtered.push(this.$services.analytics.data.sources[i]);
 				}
 			}
 			return filtered;
@@ -36,6 +42,18 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 	},
 	methods: {
 		create: function() {
+			// copy the current value from the report so it can run properly
+			for (var i = 0; i < this.reportProperties.length; i++) {
+				for (var j = 0; j < this.boundProperties.length; j++) {
+					if (this.reportProperties[i].key == this.boundProperties[j].key) {
+						for (var k = 0; k < this.properties.length; k++) {
+							if (this.properties[k].key == this.boundProperties[j].value) {
+								this.properties[k].value = this.reportProperties[i].value;
+							}
+						}
+					}
+				}
+			}
 			this.$resolve({
 				name: this.name,
 				created: new Date().toISOString(),
@@ -44,6 +62,7 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 				limit: this.limited ? this.limit : null,
 				offset: 0,
 				parameters: this.properties,
+				boundParameters: this.boundProperties,
 				connectionId: this.connectionId,
 				resultSet: null,
 				groupBy: this.groupBy
@@ -51,8 +70,15 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 		},
 		validate: function() {
 			var messages = this.$refs.form.validate();
-			console.log("validating", messages);
 			this.valid = messages.length == 0;
+		},
+		isBound: function(property) {
+			for (var i = 0; i < this.boundProperties.length; i++) {
+				if (this.boundProperties[i].value == property.key) {
+					return true;
+				}
+			}
+			return false;
 		}
 	},
 	watch: {

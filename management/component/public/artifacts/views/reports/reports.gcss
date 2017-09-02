@@ -1,4 +1,4 @@
-.analyticsLocalReports {
+.analyticsReports {
 	> h2 {
 		text-align: center;
 	}

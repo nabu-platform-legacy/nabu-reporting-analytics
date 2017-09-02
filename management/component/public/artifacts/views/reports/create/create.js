@@ -1,5 +1,5 @@
-application.views.AnalyticsLocalReportCreate = Vue.extend({
-	template: "#analyticsLocalReportCreate",
+application.views.AnalyticsReportCreate = Vue.extend({
+	template: "#analyticsReportCreate",
 	data: function() {
 		return {
 			name: null,
@@ -12,7 +12,7 @@ application.views.AnalyticsLocalReportCreate = Vue.extend({
 			this.$resolve({
 				name: this.name,
 				created: new Date().toISOString(),
-				entries: []
+				rows: []
 			});
 		},
 		validateReport: function(name) {

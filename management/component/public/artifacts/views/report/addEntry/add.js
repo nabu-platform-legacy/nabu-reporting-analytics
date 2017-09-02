@@ -6,19 +6,20 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 			subType: null,
 			name: null,
 			description: null,
-			valid: false
+			valid: false,
+			drillDown: null
 		};
 	},
 	computed: {
-		filteredSources: function() {
-			var filtered = [];
-			for (var i = 0; i < this.sources.length; i++) {
-				if (this.sources[i].type == this.type) {
-					filtered.push(this.sources[i]);
+		reportsWithInput: function() {
+			var reports = [];
+			for (var i = 0; i < this.$services.analytics.reports.local.reports.length; i++) {
+				if (this.$services.analytics.reports.local.reports[i].parameters && this.$services.analytics.reports.local.reports[i].parameters.length) {
+					reports.push(this.$services.analytics.reports.local.reports[i]);
 				}
 			}
-			return filtered;
-		}	
+			return reports;
+		}
 	},
 	methods: {
 		create: function() {
@@ -28,6 +29,7 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 				created: new Date().toISOString(),
 				type: this.type,
 				subType: this.subType,
+				drillDown: this.drillDown,
 				data: []
 			});
 		},

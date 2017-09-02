@@ -1,5 +1,5 @@
-<template id="analyticsLocalReportCreate">
-	<n-form class="layout1 analyticsLocalReportCreate" ref="form">
+<template id="analyticsReportCreate">
+	<n-form class="layout1 analyticsReportCreate" ref="form">
 		<n-form-section>
 			<n-form-section>
 				<n-form-text v-timeout:input.form="validate" v-focus v-model="name" label="Name" :validator="validateReport"/>

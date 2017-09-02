@@ -3,24 +3,26 @@ application.views.AnalyticsReport = Vue.extend({
 	data: function() {
 		return {
 			report: null,
-			name: null,
 			editing: false,
-			editable: true
+			editable: true,
+			values: [],
+			type: "database",
+			activating: true
 		}
 	},
 	activate: function(done) {
-		if (!this.report && this.name) {
-			var reports = window.localStorage.nabuAnalyticReports;
-			if (reports) {
-				reports = JSON.parse(reports);
-				for (var i = 0; i < reports.length; i++) {
-					if (reports[i].name == this.name) {
-						this.report = reports[i];
-						break;
-					}
-				}
+		this.activating = true;
+		// set all the values that are passed in
+		if (this.values) {
+			for (var i = 0; i < this.values.length; i++) {
+				this.report.parameters[i].value = this.values[i];
 			}
 		}
+		// set standard values for new fields
+		if (this.report && typeof(this.report.parameters) == "undefined") {
+			Vue.set(this.report, "parameters", []);
+		}
+		this.mapBound(this.report.parameters);
 		if (this.report && this.report.rows) {
 			var self = this;
 			var inputs = [];
@@ -49,6 +51,7 @@ application.views.AnalyticsReport = Vue.extend({
 					}
 				}
 			}
+			// get new data for everything
 			this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: inputs }}).then(function(resultSetList) {
 				var counter = 0;
 				for (var i = 0; i < self.report.rows.length; i++) {
@@ -64,21 +67,51 @@ application.views.AnalyticsReport = Vue.extend({
 					}
 				}
 				done();
+			}, function() {
+				done();
 			});
 		}
 		else {
 			done();
 		}
 	},
+	computed: {
+		route: function() {
+			return "analytics" + this.type.substring(0, 1).toUpperCase() + this.type.substring(1) + "Report";
+		}	
+	},
 	ready: function() {
+		this.activating = false;
 		var self = this;
 		new Clipboard(this.$refs.copier, {
 			text: function(trigger) {
 				return JSON.stringify(self.report);
 			}
 		});
+		this.$el.addEventListener("paste", function(event) {
+			if (self.editing) {
+				var data = event.clipboardData.getData("text/plain");
+				if (data) {
+					var parsed = JSON.parse(data);
+					if (parsed && parsed.rows) {
+						self.$confirm({ 
+							message: 'Are you sure you want to add the data to this report?', 
+							type: 'question', 
+							ok: 'Add'
+						}).then(function() {
+							nabu.utils.arrays.merge(self.report.rows, parsed.rows);
+						});
+					}
+				}
+			}
+		});
 	},
 	methods: {
+		drillDown: function(entry, data) {
+			if (entry.drillDown) {
+				this.$services.router.route(this.route, { name: entry.drillDown, values: [data[Object.keys(data)[0]]] });
+			}
+		},
 		toggleFilter: function(entry, value) {
 			if (typeof(entry.showFilter) == "undefined") {
 				Vue.set(entry, "showFilter", typeof(value) == "undefined" ? true : value);
@@ -86,16 +119,6 @@ application.views.AnalyticsReport = Vue.extend({
 			else {
 				entry.showFilter = typeof(value) == "undefined" ? !entry.showFilter : value;
 			}
-		},
-		download: function(entry, type) {
-			var self = this;
-			console.log("type is", type);
-			self.$services.swagger.execute("nabu.reporting.analytics.management.rest.store", { body: { dataSets: entry.data, type: type }}).then(function(response) {
-				if (response.uri) {
-					var parameters = self.$services.swagger.parameters("nabu.reporting.analytics.management.rest.retrieve", { uri: response.uri });
-					window.location = parameters.url;
-				}
-			});
 		},
 		addRow: function() {
 			if (!this.report.rows) {
@@ -105,9 +128,25 @@ application.views.AnalyticsReport = Vue.extend({
 				entries: []
 			});
 		},
+		shiftRow: function(report, row, amount) {
+			var index = report.rows.indexOf(row);
+			var other = index + amount;
+			if (other >= 0 && other < report.rows.length) {
+				report.rows.splice(index, 1, report.rows[other]);
+				report.rows.splice(other, 1, row);
+			}
+		},
+		shiftEntry: function(row, entry, amount) {
+			var index = row.entries.indexOf(entry);
+			var other = index + amount;
+			if (other >= 0 && other < row.entries.length) {
+				row.entries.splice(index, 1, row.entries[other]);
+				row.entries.splice(other, 1, entry);
+			}
+		},
 		addEntry: function(row) {
 			this.$prompt(function() {
-				return new application.views.AnalyticsReportAddEntry();
+				return new application.views.AnalyticsReportAddEntry({ data: { reports: this.reports }});
 			}).then(function(entry) {
 				if (!row.entries) {
 					Vue.set(row, "entries", []);
@@ -115,10 +154,13 @@ application.views.AnalyticsReport = Vue.extend({
 				row.entries.push(entry);
 			});
 		},
-		addDataSource: function(entry, clear) {
+		addDataSource: function(entry, clear, limited) {
 			var self = this;
+			if (typeof(limited) == "undefined") {
+				limited = clear;
+			}
 			return this.$prompt(function() {
-				return new application.views.AnalyticsReportAddDataSource({ data: { type: entry.type, named: !clear, limited: clear }});
+				return new application.views.AnalyticsReportAddDataSource({ data: { type: entry.type, subType: entry.subType, named: !clear, limited: limited, reportProperties: self.report.parameters }});
 			}).then(function(source) {
 				if (!entry.data) {
 					Vue.set(entry, "data", []);
@@ -178,6 +220,77 @@ application.views.AnalyticsReport = Vue.extend({
 				data.orderBy = [field];
 			}
 			this.loadPage(data, 0, true);
+		},
+		deleteProperty: function(property) {
+			this.report.parameters.splice(this.report.parameters.indexOf(property), 1);
+		},
+		isBound: function(entry, property) {
+			if (entry.data[0].boundParameters) {
+				for (var i = 0; i < entry.data[0].boundParameters.length; i++) {
+					if (entry.data[0].boundParameters[i].value == property.key) {
+						return true;
+					}
+				}
+			}
+			return false;
+		},
+		addProperty: function() {
+			var self = this;
+			return this.$prompt(function() {
+				return new application.views.AnalyticsReportAddProperty();
+			}).then(function(property) {
+				self.report.parameters.push(property);
+			});
+		},
+		mapBound: function(newValue) {
+			var map = {};
+			var affected = [];
+			for (var i = 0; i < newValue.length; i++) {
+				map[newValue[i].key] = newValue[i].value;
+			}
+			for (var i = 0; i < this.report.rows.length; i++) {
+				var row = this.report.rows[i];
+				for (var j = 0; j < row.entries.length; j++) {
+					var entry = row.entries[j];
+					for (var k = 0; k < entry.data.length; k++) {
+						var data = entry.data[k];
+						if (data.boundParameters) {
+							for (var l = 0; l < data.boundParameters.length; l++) {
+								var bound = data.boundParameters[l];
+								for (var m = 0; m < data.parameters.length; m++) {
+									var parameter = data.parameters[m];
+									if (parameter.key == bound.value && parameter.value != map[bound.key]) {
+										parameter.value = map[bound.key];
+										if (affected.indexOf(data) < 0) {
+											affected.push(data);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			return affected;
+		},
+		deleteRow: function(row) {
+			var self = this;
+			this.$confirm({
+				message: "Are you sure you want to delete this row?",
+				ok: "Delete",
+				type: "info"
+			}).then(function() {
+				var index = self.report.rows.indexOf(row);
+				self.report.rows.splice(index, 1);
+			});
+		},
+		update: function() {
+			var affected = this.mapBound(this.report.parameters);
+			return this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: affected }}).then(function(resultSetList) {
+				for (var i = 0; i < affected.length; i++) {
+					affected[i].resultSet = resultSetList.resultSets[i];
+				}
+			});
 		}
 	}
 });
