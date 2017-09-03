@@ -45,6 +45,12 @@ application.views.AnalyticsReport = Vue.extend({
 						if (typeof(entry.formatter) == "undefined") {
 							Vue.set(entry, "formatter", null);
 						}
+						if (typeof(entry.drillDownValue) == "undefined") {
+							Vue.set(entry, "drillDownValue", false);
+						}
+						if (typeof(entry.colorize) == "undefined") {
+							Vue.set(entry, "colorize", false);
+						}
 						if (entry.data) {
 							nabu.utils.arrays.merge(inputs, entry.data);
 						}

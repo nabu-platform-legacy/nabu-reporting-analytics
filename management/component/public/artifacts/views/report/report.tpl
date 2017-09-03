@@ -108,6 +108,12 @@
 				<div v-if="entry.type == 'FACT'">
 					<n-analytics-pie :entry="entry" :route="route"/>
 					<div class="actions" v-if="editing">
+						<n-form class="layout1">
+							<n-form-section>
+								<n-form-switch v-if="entry.drillDown" v-model="entry.drillDownValue" label="Value Drill" :edit="true"/>
+								<n-form-switch v-model="entry.colorize" label="Colorize" :edit="true"/>
+							</n-form-section>
+						</n-form>
 						<button class="info" @click="addDataSource(entry, true).then(function() { entry.drawn = false })">Set Data Source</button>
 					</div>
 				</div>

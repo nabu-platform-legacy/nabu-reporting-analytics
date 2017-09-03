@@ -166,11 +166,26 @@ colorify()
 						display: none;
 					}
 				}
-				
+				span {
+					padding: 0.3rem;
+					display: inline-block;
+					margin: 0.3rem;
+				}
+				.fact-good {
+					color: #378300;
+					background-color: #e1ffcb;
+					border: solid 1px #378300;
+				}
+				.fact-bad {
+					color: #a00606;
+					background-color: #ffcdcd;
+					border: solid 1px #a00606;
+				}				
 				.clickable {
 					cursor: pointer;
 				}
 				display: flex;
+				align-items: flex-start;
 				flex-wrap: wrap;
 				> * {
 					padding: 2rem;

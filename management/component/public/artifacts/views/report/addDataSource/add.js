@@ -16,7 +16,9 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 			// properties for this source that are bound to report-level properties
 			boundProperties: [],
 			// properties available from the report
-			reportProperties: []
+			reportProperties: [],
+			// the properties to hide
+			hide: []
 		};
 	},
 	created: function() {
@@ -65,7 +67,8 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 				boundParameters: this.boundProperties,
 				connectionId: this.connectionId,
 				resultSet: null,
-				groupBy: this.groupBy
+				groupBy: this.groupBy,
+				hide: this.hide
 			});
 		},
 		validate: function() {
@@ -84,6 +87,7 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 	watch: {
 		source: function(newValue) {
 			this.properties.splice(0, this.properties.length);
+			this.hide.splice(0, this.hide.length);
 			if (newValue.input) {
 				for (var i = 0; i < newValue.input.length; i++) {
 					var object = nabu.utils.objects.clone(newValue.input[i]);
@@ -91,6 +95,14 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 					object.value = null;
 					delete object.name;
 					this.properties.push(object);
+				}
+			}
+			if (newValue.output && this.type == "FACT") {
+				for (var i = 0; i < newValue.output.length; i++) {
+					this.hide.push({
+						key: newValue.output[i].name,
+						hide: false
+					});
 				}
 			}
 		}

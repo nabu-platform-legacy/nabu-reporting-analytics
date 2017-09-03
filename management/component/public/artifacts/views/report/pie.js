@@ -88,16 +88,35 @@ Vue.component("n-analytics-pie", {
 						
 						self.$el.appendChild(div);
 						
+						var clazz = "";
+						
+						if (self.entry.colorize) {
+							var value = parseFloat(self.series[i]);
+							if (!isNaN(value)) {
+								clazz += " " + (value >= 0 ? "fact-good" : "fact-bad");
+							}
+						}
+						
 						if (self.entry.drillDown) {
-							div.setAttribute("class", "clickable");
+							clazz += " clickable";
 							div.addEventListener("click", function() {
-								self.$services.router.route(self.route, { name: self.entry.drillDown, values: [self.series[i]] });
+								var value = self.entry.drillDownValue ? self.series[i] : self.labels[i];
+								self.$services.router.route(self.route, { name: self.entry.drillDown, values: [value] });
 							});
 						}
+						span.setAttribute("class", clazz);
 					}
-					
+
+					var hidden = {};
+					if (this.entry.data[0].hide) {
+						for (var i = 0; i < this.entry.data[0].hide.length; i++) {
+							hidden[this.entry.data[0].hide[i].key] = this.entry.data[0].hide[i].hide;		
+						}
+					}
 					for (var i = 0; i < this.labels.length; i++) {
-						addDiv(i);	
+						if (!hidden[self.labels[i]]) {
+							addDiv(i);
+						}
 					}
 				}
 				else {
@@ -144,7 +163,8 @@ Vue.component("n-analytics-pie", {
 									// data.value contains the point
 									// labels are in a different data entry with data.type == label
 									// both have an index
-									self.$services.router.route(self.route, { name: self.entry.drillDown, values: [self.labels[data.index]] })
+									var value = self.entry.drillDownOnValue ? self.series[data.index] : self.labels[data.index];
+									self.$services.router.route(self.route, { name: self.entry.drillDown, values: [value] })
 								});
 								data.element._node.classList.add("ct-clickable");
 							}

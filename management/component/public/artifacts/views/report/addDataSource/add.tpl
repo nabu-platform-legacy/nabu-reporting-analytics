@@ -18,6 +18,9 @@
 						v-model="property.value"
 						v-if="!isBound(property)"/>
 				</n-form-section>
+				<n-form-section v-for="hidden in hide">
+					<n-form-switch v-timeout:input.form="validate" :label="'Hide ' + hidden.key" :required="true" v-model="hidden.hide"/>
+				</n-form-section>
 			</n-form-section>
 			<footer class="actions">
 				<a href="javascript:void(0)" @click="$reject()">Cancel</a>

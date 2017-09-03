@@ -6,4 +6,5 @@
     <input>nabu.reporting.analytics.management.types.storeInput</input>
     <output>nabu.reporting.analytics.management.types.storeResult</output>
     <lenient>false</lenient>
+    <decamelify>false</decamelify>
 </restInterface>
