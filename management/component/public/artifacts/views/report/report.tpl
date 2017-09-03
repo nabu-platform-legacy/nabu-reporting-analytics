@@ -24,7 +24,8 @@
 			<div v-for="entry in row.entries" class="card" :class="'type-' + entry.type">
 				<h2 v-auto-close="function() { toggleFilter(entry, false) }">
 					<div class="download">
-						<span class="n-icon n-icon-search" @click="toggleFilter(entry)" v-if="entry.data && entry.data.length && entry.data[0].parameters && entry.data[0].parameters.length && (!entry.data[0].boundParameters || entry.data[0].boundParameters.length < entry.data[0].parameters.length)"></span>
+						<span class="n-icon n-icon-refresh" @click="refresh(entry)"></span>
+						<span class="n-icon n-icon-search" @click="toggleFilter(entry)" v-if="entry.data && entry.data.length && entry.data[0].parameters && entry.data[0].parameters.length && (!entry.data[0].boundParameters || amountOfBound(entry.data[0]) < entry.data[0].parameters.length)"></span>
 						<span v-if="entry.data && entry.data.length && entry.type != 'GAUGE'" class="n-icon n-icon-table" title="Download as CSV" @click="$services.analytics.data.download(entry.data, 'csv')"></span>
 						<span v-if="entry.data && entry.data.length && entry.type != 'GAUGE'" class="n-icon n-icon-code" title="Download as XML" @click="$services.analytics.data.download(entry.data, 'xml')"></span>
 						<span v-if="entry.data && entry.data.length && entry.type != 'GAUGE'" class="n-icon n-icon-download" title="Download as JSON" @click="$services.analytics.data.download(entry.data, 'json')"></span>
@@ -44,7 +45,7 @@
 						<thead>
 							<tr>
 								<td @click="sort(data, key)" 
-									v-for="key in Object.keys(data.resultSet.results[0])"><span>{{ key }}</span>
+									v-for="key in Object.keys(data.resultSet.results[0])" v-if="!isHidden(data, key)"><span>{{ key }}</span>
 										<span class="n-icon n-icon-sort-asc" v-if="data.orderBy.indexOf(key) >= 0"></span>
 										<span class="n-icon n-icon-sort-desc" v-if="data.orderBy.indexOf(key + ' desc') >= 0"></span>
 								</td>
@@ -52,7 +53,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="result in data.resultSet.results" :class="{ 'clickable': entry.drillDown }">
-								<td v-for="key in result" @click="drillDown(entry, result)">{{ key }}</td>
+								<td v-for="key in Object.keys(result)" v-if="!isHidden(data, key)" @click="drillDown(entry, result)" :class="{'good': entry.colorize && isGood(result[key]), 'bad': entry.colorize && isBad(result[key])}">{{ result[key] }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -61,6 +62,9 @@
 						<n-paging :value="entry.data[0].resultSet.page.current" :total="entry.data[0].resultSet.page.total" :load="loadPage.bind(this, entry.data[0])"/>
 					</div>
 					<div class="actions" v-if="editing">
+						<n-form-section>
+							<n-form-switch v-model="entry.colorize" label="Colorize" :edit="true"/>
+						</n-form-section>
 						<button class="info" @click="addDataSource(entry, true)">Set Data Source</button>
 					</div>
 				</div>
@@ -116,6 +120,9 @@
 						</n-form>
 						<button class="info" @click="addDataSource(entry, true).then(function() { entry.drawn = false })">Set Data Source</button>
 					</div>
+				</div>
+				<div v-if="entry.type == 'ROUTE'">
+					<div v-route-render="generateRoute(entry)"></div>
 				</div>
 			</div>
 			<div class="actions">

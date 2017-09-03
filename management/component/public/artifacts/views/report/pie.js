@@ -6,9 +6,6 @@ Vue.component("n-analytics-pie", {
 			target: null
 		}
 	},
-	created: function() {
-		Vue.set(this.entry, "drawn", false);	
-	},
 	ready: function() {
 		this.draw();
 	},
@@ -93,7 +90,12 @@ Vue.component("n-analytics-pie", {
 						if (self.entry.colorize) {
 							var value = parseFloat(self.series[i]);
 							if (!isNaN(value)) {
-								clazz += " " + (value >= 0 ? "fact-good" : "fact-bad");
+								if (value > 0) {
+									clazz += " good";
+								}
+								else if (value < 0) {
+									clazz += " bad";
+								}
 							}
 						}
 						
@@ -176,7 +178,6 @@ Vue.component("n-analytics-pie", {
 					}
 					this.$el.appendChild(newTarget);
 					this.target = newTarget;
-					this.entry.drawn = true;
 				}
 			}
 		}

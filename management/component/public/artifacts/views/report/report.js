@@ -15,6 +15,9 @@ application.views.AnalyticsReport = Vue.extend({
 		// set all the values that are passed in
 		if (this.values) {
 			for (var i = 0; i < this.values.length; i++) {
+				if (i >= this.report.parameters.length) {
+					break;
+				}
 				this.report.parameters[i].value = this.values[i];
 			}
 		}
@@ -113,8 +116,35 @@ application.views.AnalyticsReport = Vue.extend({
 		});
 	},
 	methods: {
+		generateRoute: function(entry) {
+			var route = { parameters: {} };
+			route.alias = entry.subType;
+			for (var i = 0; i < this.report.parameters.length; i++) {
+				route.parameters[this.report.parameters[i].key] = this.report.parameters[i].value;
+			}
+			return route;
+		},
+		isGood: function(value) {
+			value = parseFloat(value);
+			if (!isNaN(value)) {
+				if (value > 0) {
+					return true;
+				}
+			}
+			return false;
+		},
+		isBad: function(value) {
+			value = parseFloat(value);
+			if (!isNaN(value)) {
+				if (value < 0) {
+					return true;
+				}
+			}
+			return false;
+		},
 		drillDown: function(entry, data) {
 			if (entry.drillDown) {
+				// Object.keys(data).map(function(x) { return data[x] })
 				this.$services.router.route(this.route, { name: entry.drillDown, values: [data[Object.keys(data)[0]]] });
 			}
 		},
@@ -150,6 +180,16 @@ application.views.AnalyticsReport = Vue.extend({
 				row.entries.splice(other, 1, entry);
 			}
 		},
+		isHidden: function(data, name) {
+			if (data.hide) {
+				for (var i = 0; i < data.hide.length; i++) {
+					if (data.hide[i].key == name) {
+						return data.hide[i].hide;
+					}
+				}
+			}
+			return false;
+		},
 		addEntry: function(row) {
 			this.$prompt(function() {
 				return new application.views.AnalyticsReportAddEntry({ data: { reports: this.reports }});
@@ -179,6 +219,15 @@ application.views.AnalyticsReport = Vue.extend({
 					source.resultSet = resultSetList.resultSets[0];
 				});
 			});
+		},
+		refresh: function(entry) {
+			if (entry.data) {
+				return this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: entry.data }}).then(function(resultSetList) {
+					for (var i = 0; i < entry.data.length; i++) {
+						entry.data[i].resultSet = resultSetList.resultSets[i];
+					}
+				});
+			}
 		},
 		loadPage: function(data, page, force) {
 			var offset = data.limit * page;
@@ -229,6 +278,16 @@ application.views.AnalyticsReport = Vue.extend({
 		},
 		deleteProperty: function(property) {
 			this.report.parameters.splice(this.report.parameters.indexOf(property), 1);
+		},
+		amountOfBound(data) {
+			var total = 0;
+			var bound = data.boundParameters.map(function(x) { return x.value });
+			for (var i = 0; i < data.parameters.length; i++) {
+				if (bound.indexOf(data.parameters[i].key) >= 0) {
+					total++;
+				}
+			}
+			return total;
 		},
 		isBound: function(entry, property) {
 			if (entry.data[0].boundParameters) {

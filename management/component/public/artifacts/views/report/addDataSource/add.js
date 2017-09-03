@@ -97,7 +97,7 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 					this.properties.push(object);
 				}
 			}
-			if (newValue.output && this.type == "FACT") {
+			if (newValue.output && (this.type == "FACT" || this.type == "TABULAR")) {
 				for (var i = 0; i < newValue.output.length; i++) {
 					this.hide.push({
 						key: newValue.output[i].name,

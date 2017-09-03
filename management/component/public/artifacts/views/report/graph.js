@@ -6,9 +6,6 @@ Vue.component("n-analytics-graph", {
 			target: null
 		}
 	},
-	created: function() {
-		Vue.set(this.entry, "drawn", false);	
-	},
 	ready: function() {
 		this.draw();
 	},
@@ -368,7 +365,6 @@ Vue.component("n-analytics-graph", {
 				}
 				this.$el.appendChild(newTarget);
 				this.target = newTarget;
-				this.entry.drawn = true;
 			}
 		}
 	},

@@ -101,10 +101,21 @@ colorify()
 			}
 		}
 		
+		.good {
+			color: #378300;
+			background-color: #e1ffcb;
+		}
+		.bad {
+			color: #a00606;
+			background-color: #ffcdcd;
+		}
+		
 		flex-wrap: nowrap;
 		align-items: stretch;
 		.card {
-			
+			.n-icon-refresh {
+				margin-right: 0.7rem;
+			}
 			&.parameters {
 				max-width: 30rem;
 			}
@@ -171,14 +182,10 @@ colorify()
 					display: inline-block;
 					margin: 0.3rem;
 				}
-				.fact-good {
-					color: #378300;
-					background-color: #e1ffcb;
+				.good {
 					border: solid 1px #378300;
 				}
-				.fact-bad {
-					color: #a00606;
-					background-color: #ffcdcd;
+				.bad {
 					border: solid 1px #a00606;
 				}				
 				.clickable {
@@ -317,7 +324,7 @@ colorify()
 					cursor: pointer;
 				}
 			}
-			table {
+			table.classic {
 				box-shadow: none;
 				border-style: none;
 				width: 99%;

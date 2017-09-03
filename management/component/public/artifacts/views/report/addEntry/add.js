@@ -19,6 +19,13 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 				}
 			}
 			return reports;
+		},
+		routes: function() {
+			var routes = [];
+			for (var i = 0; i < this.$services.router.router.routes.length; i++) {
+				routes.push(this.$services.router.router.routes[i].alias);
+			}
+			return routes;
 		}
 	},
 	methods: {

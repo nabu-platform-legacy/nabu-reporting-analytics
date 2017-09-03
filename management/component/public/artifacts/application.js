@@ -29,7 +29,7 @@ application.configuration.modules.push(function($services) {
 			if (!report) {
 				throw "Could not find local report: " + parameters.name;
 			}
-			return new application.views.AnalyticsReport({ data: { report: report, values: parameters.values, type: "local" } });
+			return new application.views.AnalyticsReport({ data: { report: JSON.parse(JSON.stringify(report)), values: parameters.values, type: "local" } });
 		},
 		url: "/analytics/report/local/{name}"
 	});
