@@ -7,7 +7,8 @@ application.views.AnalyticsReport = Vue.extend({
 			editable: true,
 			values: [],
 			type: "database",
-			activating: true
+			activating: true,
+			timer: null
 		}
 	},
 	activate: function(done) {
@@ -27,6 +28,68 @@ application.views.AnalyticsReport = Vue.extend({
 		}
 		this.mapBound(this.report.parameters);
 		if (this.report && this.report.rows) {
+			this.reloadAll().then(function() {
+				done();
+			}, function() {
+				done();
+			});
+		}
+		else {
+			done();
+		}
+	},
+	beforeDestroy: function(component) {
+		if (component.timer != null) {
+			clearTimeout(component.timer);
+		}
+	},
+	computed: {
+		route: function() {
+			return "analytics" + this.type.substring(0, 1).toUpperCase() + this.type.substring(1) + "Report";
+		}	
+	},
+	ready: function() {
+		this.activating = false;
+		var self = this;
+		new Clipboard(this.$refs.copier, {
+			text: function(trigger) {
+				return JSON.stringify(self.report);
+			}
+		});
+		this.$el.addEventListener("paste", function(event) {
+			if (self.editing) {
+				var data = event.clipboardData.getData("text/plain");
+				if (data) {
+					var parsed = JSON.parse(data);
+					if (parsed && parsed.rows) {
+						self.$confirm({ 
+							message: 'Are you sure you want to add the data to this report?', 
+							type: 'question', 
+							ok: 'Add'
+						}).then(function() {
+							nabu.utils.arrays.merge(self.report.rows, parsed.rows);
+						});
+					}
+				}
+			}
+		});
+		this.autoReload();
+	},
+	methods: {
+		autoReload: function() {
+			var self = this;
+			self.timer = setTimeout(function() {
+				if (self.report && self.report.rows) {
+					self.reloadAll().then(function() {
+						self.autoReload();
+					})
+				}
+				else {
+					self.autoReload();
+				}
+			}, 10000);
+		},
+		reloadAll: function() {
 			var self = this;
 			var inputs = [];
 			for (var i = 0; i < this.report.rows.length; i++) {
@@ -61,7 +124,7 @@ application.views.AnalyticsReport = Vue.extend({
 				}
 			}
 			// get new data for everything
-			this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: inputs }}).then(function(resultSetList) {
+			return this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: inputs }}).then(function(resultSetList) {
 				var counter = 0;
 				for (var i = 0; i < self.report.rows.length; i++) {
 					if (self.report.rows[i].entries) {
@@ -75,47 +138,8 @@ application.views.AnalyticsReport = Vue.extend({
 						}
 					}
 				}
-				done();
-			}, function() {
-				done();
 			});
-		}
-		else {
-			done();
-		}
-	},
-	computed: {
-		route: function() {
-			return "analytics" + this.type.substring(0, 1).toUpperCase() + this.type.substring(1) + "Report";
-		}	
-	},
-	ready: function() {
-		this.activating = false;
-		var self = this;
-		new Clipboard(this.$refs.copier, {
-			text: function(trigger) {
-				return JSON.stringify(self.report);
-			}
-		});
-		this.$el.addEventListener("paste", function(event) {
-			if (self.editing) {
-				var data = event.clipboardData.getData("text/plain");
-				if (data) {
-					var parsed = JSON.parse(data);
-					if (parsed && parsed.rows) {
-						self.$confirm({ 
-							message: 'Are you sure you want to add the data to this report?', 
-							type: 'question', 
-							ok: 'Add'
-						}).then(function() {
-							nabu.utils.arrays.merge(self.report.rows, parsed.rows);
-						});
-					}
-				}
-			}
-		});
-	},
-	methods: {
+		},
 		generateRoute: function(entry) {
 			var route = { parameters: {} };
 			route.alias = entry.subType;
