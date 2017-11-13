@@ -8,10 +8,29 @@ nabu.services.VueService(Vue.extend({
 	computed: {
 		connection: function() {
 			return this.$services.manager.connection();
+		},
+		actions: function() {
+			var actions = [];
+			var self = this;
+			var pushIt = function(report) {
+				actions.push({
+					title: report.name,
+					dynamic: true,
+					handler: function() {
+						self.$services.router.route("analyticsDatabaseReport", { name: report.name });
+					}
+				});
+			}
+			for (var i = 0; i < this.reports.length; i++) {
+				pushIt(this.reports[i]);
+			}
+			return actions;
 		}
 	},
 	activate: function(done) {
 		this.load().then(function() {
+			done();
+		}, function() {
 			done();
 		});
 	},
@@ -65,6 +84,17 @@ nabu.services.VueService(Vue.extend({
 	watch: {
 		connection: function() {
 			this.load();
+		},
+		actions: function(newValue) {
+			var menu = this.$services.manager.findMenu("Analytics");
+			if (menu) {
+				for (var i = menu.actions.length - 1; i >= 0; i--) {
+					if (menu.actions[i].dynamic) {
+						menu.actions.splice(i, 1);
+					}
+				}
+				nabu.utils.arrays.merge(menu.actions, newValue);
+			}
 		}
 	}
 }), { name: "nabu.analytics.DatabaseReports", lazy: true });

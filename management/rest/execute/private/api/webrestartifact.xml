@@ -5,5 +5,7 @@
     <role>manager</role>
     <input>nabu.reporting.analytics.management.types.setList</input>
     <output>nabu.reporting.analytics.management.types.resultList</output>
+    <configurationType>nabu.reporting.analytics.management.configuration</configurationType>
     <lenient>false</lenient>
+    <decamelify>false</decamelify>
 </restInterface>

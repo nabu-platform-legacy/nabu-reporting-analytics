@@ -1,5 +1,5 @@
-colors = series("FF4136", "FFDC00", "FF851B", "0074D9", "01FF70", "B10DC9", "39CCCC", "001f3f", "7FDBFF")
-letters = series("a", "b", "c", "d", "e", "f", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s")
+colors = series("FF4136", "FFDC00", "FF851B", "0074D9", "01FF70", "B10DC9", "39CCCC", "001f3f", "7FDBFF", "ff0080", "00ffbf", "ffbf00", "bfff00")
+letters = series("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s")
 
 colorify = lambda
 	for (i : size(colors))
@@ -113,11 +113,21 @@ colorify()
 		flex-wrap: nowrap;
 		align-items: stretch;
 		.card {
+			overflow-x: auto;
+			&.type-WATERFALL {
+				.ct-area {
+					fill: #666;
+				}
+			}
 			.n-icon-refresh {
 				margin-right: 0.7rem;
 			}
 			&.parameters {
 				max-width: 30rem;
+			}
+			
+			&.type-SERIES, .type-GAUGE {
+				overflow: hidden;
 			}
 			
 			h2 {
@@ -130,7 +140,12 @@ colorify()
 				border-style: none none solid none;
 				overflow: visible;
 				font-weight: normal;
-				
+
+				&.empty {
+					border: none;
+					margin: 0;
+					padding: 0;
+				}				
 				.filter {
 					z-index: 100;
 				}
@@ -221,8 +236,9 @@ colorify()
 					stroke-width: 1px;
 				}
 				.ct-waterfall-increment {
-					stroke-width: 3px !important;
+					stroke-width: 2px !important;
 					stroke: #ccc;
+					fill: #fff;
 					
 					&.ct-waterfall-positive {
 						stroke: #01FF70;
@@ -234,7 +250,10 @@ colorify()
 				
 				.ct-clickable {
 					cursor: pointer;
-				}	
+				}
+				.ct-label.ct-vertical {
+					font-size: 0.7rem;
+				}
 				.ct-label-rotated {
 					.ct-label.ct-horizontal.ct-end {
 						display: block;

@@ -12,11 +12,20 @@ Vue.component("n-analytics-graph", {
 	computed: {
 		labels: function() {
 			var labels = [];
-			if (this.entry.data.length && this.entry.data[0].resultSet && this.entry.data[0].resultSet.results) {
-				for (var j = 0; j < this.entry.data[0].resultSet.results.length; j++) {
-					var result = this.entry.data[0].resultSet.results[j];
-					var keys = Object.keys(result);
-					labels.push(keys.length == 1 ? j : result[keys[0]]);
+			var grouped = this.groupedSeries;
+			var keys = Object.keys(grouped);
+			if (keys.length) {
+				for (var i = 0; i < grouped[keys[0]].length; i++) {
+					labels.push(grouped[keys[0]][i].xValue);
+				}
+			}
+			else {
+				if (this.entry.data.length && this.entry.data[0].resultSet && this.entry.data[0].resultSet.results) {
+					for (var j = 0; j < this.entry.data[0].resultSet.results.length; j++) {
+						var result = this.entry.data[0].resultSet.results[j];
+						var keys = Object.keys(result);
+						labels.push(keys.length == 1 ? j : result[keys[0]]);
+					}
 				}
 			}
 			return labels;
@@ -28,6 +37,7 @@ Vue.component("n-analytics-graph", {
 					if (this.entry.data[i].groupBy) {
 						var currentValue = null;
 						var xValues = [];
+						var values = null;
 						for (var j = 0; j < this.entry.data[i].resultSet.results.length; j++) {
 							var result = this.entry.data[i].resultSet.results[j];
 							var keys = Object.keys(result);
@@ -35,51 +45,77 @@ Vue.component("n-analytics-graph", {
 							var xValue = result[keys[0]];
 							// ignore the undefined values
 							if (typeof(value) != "undefined") {
-								var values = grouped[value];
+								values = grouped[value];
 								if (!values) {
 									values = [];
 									// if we make a new array, backfill for missing x values
 									for (var l = 0; l < xValues.length; l++) {
-										values.push({
-											meta: (this.entry.showAxisTitle ? '' : keys[keys.length > 1 ? 1 : 0] + " - ") + value + " (" + this.format(xValues[l]) + ")",
-											value: 0,
-											xValue: xValues[l]
-										});
+										if (xValues[i] != xValue) {
+											values.push({
+												meta: value + " (" + this.format(xValues[l]) + ")",
+												value: 0,
+												xValue: xValues[l]
+											});
+										}
 									}
 									grouped[value] = values;
 								}
 								values.push({
 									// show the y-value in the meta
-									meta: (this.entry.showAxisTitle ? '' : keys[keys.length > 1 ? 1 : 0] + " - ") + value + " (" + this.format(xValue) + ")",
+									meta: value + " (" + this.format(xValue) + ")",
 									// the value is the y-axis
 									value: result[keys[keys.length > 1 ? 1 : 0]],
 									xValue: xValue
 								});
 							}
 							// we are switching to a new value, make sure every grouped series has "some" value
-							if (xValue != currentValue) {
+							if (currentValue != null && xValue != currentValue) {
 								var groupKeys = Object.keys(grouped);
 								for (var k = 0; k < groupKeys.length; k++) {
-									var values = grouped[groupKeys[k]];
-									if (!values) {
-										values = [];
-										grouped[groupKeys[k]] = values;
-									}
-									if (!values.length || values[values.length - 1].xValue !== xValue) {
-										values.push({
-											meta: (this.entry.showAxisTitle ? '' : keys[keys.length > 1 ? 1 : 0] + " - ") + groupKeys[k] + " (" + this.format(xValue) + ")",
-											value: 0,
-											xValue: xValue
-										});
+									// not for the current group, we have just added it
+									if (groupKeys[k] != value) {
+										values = grouped[groupKeys[k]];
+										if (!values) {
+											values = [];
+											grouped[groupKeys[k]] = values;
+										}
+										if (!values.length || values[values.length - 1].xValue != currentValue) {
+											values.push({
+												meta: groupKeys[k] + " (" + this.format(xValue) + ")",
+												value: 0,
+												xValue: currentValue
+											});
+										}
 									}
 								}
-								currentValue = xValue;
 							}
-							xValues.push(xValue);
+							currentValue = xValue;
+							if (xValues.indexOf(xValue) < 0) {
+								xValues.push(xValue);
+							}
+						}
+						// if the last value has not been pushed to other arrays, push them now
+						if (currentValue != null) {
+							var groupKeys = Object.keys(grouped);
+							for (var k = 0; k < groupKeys.length; k++) {
+								values = grouped[groupKeys[k]];
+								if (!values) {
+									values = [];
+									grouped[groupKeys[k]] = values;
+								}
+								if (!values.length || values[values.length - 1].xValue != currentValue) {
+									values.push({
+										meta: (this.entry.showAxisTitle ? '' : keys[keys.length > 1 ? 1 : 0] + " - ") + groupKeys[k] + " (" + this.format(xValue) + ")",
+										value: 0,
+										xValue: currentValue
+									});
+								}
+							}
 						}
 					}
 				}
 			}
+			console.log("grouped is", grouped);
 			return grouped;
 		},
 		series: function() {
@@ -129,6 +165,9 @@ Vue.component("n-analytics-graph", {
 					if (max == null || this.series[0][i].value > max) {
 						max = this.series[0][i].value;
 					}
+					if (this.series[0][i].endValue && this.series[0][i].endValue > max) {
+						max = this.series[0][i].endValue;
+					}
 				}
 				return max;
 			}
@@ -175,6 +214,9 @@ Vue.component("n-analytics-graph", {
 				}
 				else if (self.entry.formatter == "dateTime") {
 					result = date.toLocaleString();
+				}
+				else if (self.entry.formatter == "dateTime2") {
+					result = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear() + " " + date.getHours() + ":" + date.getMinutes();
 				}
 			}
 			return result;
@@ -234,7 +276,6 @@ Vue.component("n-analytics-graph", {
 				});
 				
 				lineSmooth = null;
-				
 			 	var chart = new constructor(newTarget, {
 					labels: self.labels,
 					series: self.series
@@ -242,18 +283,18 @@ Vue.component("n-analytics-graph", {
 					donut: this.entry.subType == "DONUT",
 					seriesBarDistance: 10,
 					stackBars: this.entry.subType == "BAR_STACKED",
-					showArea: self.entry.type != "WATERFALL",
+					showArea: self.entry.showArea,
 					axisX: {
 						offset: self.entry.angleLabels ? 50 : 30,
 						labelInterpolationFnc: function (value, index) {
 							var interval = Math.floor(self.labels.length / 15.0);
-							var result = self.labels.length < 10 || index % interval == 0 ? value : null;
+							var result = self.labels.length <= 10 || index % interval == 0 ? value : null;
 							return self.format(result);
 						}
 					},
 					axisY: {
 						offset: self.entry.angleLabels ? 110 : 40,
-						scaleMinSpace: 15	
+						scaleMinSpace: 15
 					},
 					//showPoint: false,
 					fullWidth: true,
@@ -302,7 +343,7 @@ Vue.component("n-analytics-graph", {
 					}
 					
 					// We are creating a new path SVG element that draws a triangle around the point coordinates
-					var letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
+					var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s"];
 					// If the draw event was triggered from drawing a point on the line chart
 					if (data.type === 'point') {
 						if (self.entry.type == "WATERFALL") {
@@ -316,9 +357,20 @@ Vue.component("n-analytics-graph", {
 
 							if (bounding) {
 								var factor = bounding.height / (self.max - self.min);
-
-								var line = new Chartist.Svg.Path(false);
-								line.move(data.x, data.y).line(data.x, bounding.height - ((value.endValue - self.min) * factor));
+								var xFactor = bounding.width / self.series[0].length;
+								
+								var blockWidth = Math.max(0, (xFactor - 3) / 2);
+								blockWidth = Math.min(blockWidth, 7);
+								
+								var endY = bounding.height - ((value.endValue - self.min) * factor);
+								
+								var line = new Chartist.Svg.Path(true);
+								line.move(data.x - blockWidth, data.y);
+								line.line(data.x + blockWidth, data.y);
+								line.line(data.x + blockWidth, endY);
+								line.line(data.x - blockWidth, endY);
+								
+								//line.move(data.x, data.y).line(data.x, endY);
 							
 								var path = Chartist.Svg('path', {
 									d: line.stringify(),

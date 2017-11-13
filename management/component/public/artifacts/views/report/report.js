@@ -8,7 +8,8 @@ application.views.AnalyticsReport = Vue.extend({
 			values: [],
 			type: "database",
 			activating: true,
-			timer: null
+			timer: null,
+			readOnly: ${when(application.configuration("nabu.reporting.analytics.management.configuration")/readOnly == null, false, application.configuration("nabu.reporting.analytics.management.configuration")/readOnly)}
 		}
 	},
 	activate: function(done) {
@@ -38,9 +39,9 @@ application.views.AnalyticsReport = Vue.extend({
 			done();
 		}
 	},
-	beforeDestroy: function(component) {
-		if (component.timer != null) {
-			clearTimeout(component.timer);
+	beforeDestroy: function() {
+		if (this.timer != null) {
+			clearTimeout(this.timer);
 		}
 	},
 	computed: {
@@ -51,11 +52,13 @@ application.views.AnalyticsReport = Vue.extend({
 	ready: function() {
 		this.activating = false;
 		var self = this;
-		new Clipboard(this.$refs.copier, {
-			text: function(trigger) {
-				return JSON.stringify(self.report);
-			}
-		});
+		if (!this.readOnly) {
+			new Clipboard(this.$refs.copier, {
+				text: function(trigger) {
+					return JSON.stringify(self.report);
+				}
+			});
+		}
 		this.$el.addEventListener("paste", function(event) {
 			if (self.editing) {
 				var data = event.clipboardData.getData("text/plain");
@@ -76,18 +79,78 @@ application.views.AnalyticsReport = Vue.extend({
 		this.autoReload();
 	},
 	methods: {
+		keys: function(resultSet) {
+			var longestKeys = [];
+			for (var i = 0; i < resultSet.results.length; i++) {
+				var keys = Object.keys(resultSet.results[i]);
+				if (keys.length > longestKeys.length) {
+					longestKeys = keys;
+				}
+			}
+			return longestKeys;
+		},
+		hasVisibleParameters: function(report) {
+			if (report.parameters) {
+				for (var i = 0; i < report.parameters.length; i++) {
+					if (!report.parameters[i].hide) {
+						return true;
+					}
+				}
+			}
+			return false;
+		},
 		autoReload: function() {
 			var self = this;
 			self.timer = setTimeout(function() {
 				if (self.report && self.report.rows) {
-					self.reloadAll().then(function() {
+					var data = [];
+					for (var i = 0; i < self.report.rows.length; i++) {
+						if (self.report.rows[i].entries) {
+							for (var j = 0; j < self.report.rows[i].entries.length; j++) {
+								var entry = self.report.rows[i].entries[j];
+								if (entry.data && entry.autoreload) {
+									nabu.utils.arrays.merge(data, entry.data);
+								}
+							}
+						}
+					}
+					self.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: data }}).then(function(resultSetList) {
+						var counter = 0;
+						for (var i = 0; i < self.report.rows.length; i++) {
+							if (self.report.rows[i].entries) {
+								for (var j = 0; j < self.report.rows[i].entries.length; j++) {
+									var entry = self.report.rows[i].entries[j];
+									if (entry.data && entry.autoreload) {
+										for (var k = 0; k < entry.data.length; k++) {
+											entry.data[k].resultSet = resultSetList.resultSets[counter++];
+										}
+									}
+								}
+							}
+						}
 						self.autoReload();
-					})
+					});
 				}
 				else {
 					self.autoReload();
 				}
-			}, 10000);
+			}, 30000);
+		},
+		interpret: function(entry, value) {
+			if (typeof(value) == "string" && entry.parseDates) {
+				if (value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}.*/)) {
+					return this.formatDateTime(new Date(value));
+				}
+				else if (value.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)) {
+					return this.formatDate(new Date(value));
+				}
+			}
+			if (typeof(value) == "string" && entry.crop) {
+				if (value.length > entry.crop) {
+					return value.substring(0, entry.crop) + "...";
+				}
+			}
+			return value;
 		},
 		reloadAll: function() {
 			var self = this;
@@ -117,9 +180,28 @@ application.views.AnalyticsReport = Vue.extend({
 						if (typeof(entry.colorize) == "undefined") {
 							Vue.set(entry, "colorize", false);
 						}
+						if (typeof(entry.showArea) == "undefined") {
+							Vue.set(entry, "showArea", true);
+						}
+						if (typeof(entry.parseDates) == "undefined") {
+							Vue.set(entry, "parseDates", false);
+						}
+						if (typeof(entry.autoreload) == "undefined") {
+							Vue.set(entry, "autoreload", false);
+						}
+						if (typeof(entry.crop) == "undefined") {
+							Vue.set(entry, "crop", null);
+						}
 						if (entry.data) {
 							nabu.utils.arrays.merge(inputs, entry.data);
 						}
+					}
+				}
+			}
+			if (this.report.parameters) {
+				for (var i = 0; i < this.report.parameters.length; i++) {
+					if (typeof(this.report.parameters[i].hide) == "undefined") {
+						Vue.set(this.report.parameters[i], "hide", false);
 					}
 				}
 			}
@@ -166,10 +248,36 @@ application.views.AnalyticsReport = Vue.extend({
 			}
 			return false;
 		},
+		clickThrough: function(entry, data) {
+			if (entry.clickThrough) {
+				var url = entry.clickThrough;
+				for (var key in data) {
+					url = url.replace(new RegExp("{[\s]*" + key + "[\s]*}"), data[key]);
+				}
+				window.location = url;
+			}	
+		},
 		drillDown: function(entry, data) {
 			if (entry.drillDown) {
 				// Object.keys(data).map(function(x) { return data[x] })
-				this.$services.router.route(this.route, { name: entry.drillDown, values: [data[Object.keys(data)[0]]] });
+				var values = [];
+				// just push the first value (was original behavior)
+				if (!entry.drillDownValues) {
+					values.push(data[Object.keys(data)[0]]);
+				}
+				// do a targeted drilldown
+				else {
+					for (var i = 0; i < entry.drillDownValues.length; i++) {
+						if (entry.drillDownValues[i].value) {
+							values.push(data[entry.drillDownValues[i].value]);
+						}
+						// push an empty value, it is assigned in order
+						else {
+							values.push(null);
+						}
+					}
+				}
+				this.$services.router.route(this.route, { name: entry.drillDown, values: values });
 			}
 		},
 		toggleFilter: function(entry, value) {
@@ -230,7 +338,7 @@ application.views.AnalyticsReport = Vue.extend({
 				limited = clear;
 			}
 			return this.$prompt(function() {
-				return new application.views.AnalyticsReportAddDataSource({ data: { type: entry.type, subType: entry.subType, named: !clear, limited: limited, reportProperties: self.report.parameters }});
+				return new application.views.AnalyticsReportAddDataSource({ data: { entry: entry, reportProperties: self.report.parameters }});
 			}).then(function(source) {
 				if (!entry.data) {
 					Vue.set(entry, "data", []);
@@ -303,7 +411,7 @@ application.views.AnalyticsReport = Vue.extend({
 		deleteProperty: function(property) {
 			this.report.parameters.splice(this.report.parameters.indexOf(property), 1);
 		},
-		amountOfBound(data) {
+		amountOfBound: function(data) {
 			var total = 0;
 			var bound = data.boundParameters.map(function(x) { return x.value });
 			for (var i = 0; i < data.parameters.length; i++) {
@@ -375,6 +483,12 @@ application.views.AnalyticsReport = Vue.extend({
 		},
 		update: function() {
 			var affected = this.mapBound(this.report.parameters);
+			// reset the offset if applicable
+			for (var i = 0; i < affected.length; i++) {
+				if (affected[i].offset) {
+					affected[i].offset = 0;
+				}
+			}
 			return this.$services.swagger.execute("nabu.reporting.analytics.management.rest.execute", { body: { dataSets: affected }}).then(function(resultSetList) {
 				for (var i = 0; i < affected.length; i++) {
 					affected[i].resultSet = resultSetList.resultSets[i];

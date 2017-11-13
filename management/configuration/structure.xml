@@ -1,3 +1,5 @@
 <structure name="analytics">
     <field maxOccurs="unbounded" minOccurs="0" name="entries" type="java.lang.String"/>
+    <field minOccurs="0" name="executorServiceId" type="java.lang.String"/>
+    <field minOccurs="0" name="readOnly" type="java.lang.Boolean"/>
 </structure>

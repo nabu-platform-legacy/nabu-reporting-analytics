@@ -8,7 +8,8 @@
 				<n-form-combo v-timeout:input.form="validate" v-if="type == 'SERIES'" :required="true" label="Sub Type" v-model="subType" :items="[ 'LINE', 'BAR', 'BAR_STACKED' ]"/>
 				<n-form-combo v-timeout:input.form="validate" v-if="type == 'GAUGE'" :required="true" label="Sub Type" v-model="subType" :items="[ 'PIE', 'DONUT', 'DONUT_HALF' ]"/>
 				<n-form-combo v-timeout:input.form="validate" v-if="type == 'ROUTE'" :required="true" label="Route" v-model="subType" :items="routes"/>
-				<n-form-combo v-if="reportsWithInput && reportsWithInput.length" v-timeout:input.form="validate" :required="false" label="Drill Down" v-model="drillDown" :items="reportsWithInput.map(function(x) { return x.name })" />
+				<n-form-combo v-if="!clickThrough && reportsWithInput && reportsWithInput.length" v-timeout:input.form="validate" :required="false" label="Drill Down" v-model="drillDown" :items="reportsWithInput.map(function(x) { return x.name })" />
+				<n-form-text v-if="!drillDown" v-model="clickThrough" label="Click through template, use {nameOfProperty}"/>
 			</n-form-section>
 			<footer class="actions">
 				<a href="javascript:void(0)" @click="$reject()">Cancel</a>

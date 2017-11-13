@@ -7,7 +7,9 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 			name: null,
 			description: null,
 			valid: false,
-			drillDown: null
+			drillDown: null,
+			drillDownParameters: [],
+			clickThrough: null
 		};
 	},
 	computed: {
@@ -37,12 +39,28 @@ application.views.AnalyticsReportAddEntry = Vue.extend({
 				type: this.type,
 				subType: this.subType,
 				drillDown: this.drillDown,
+				drillDownParameters: this.drillDownParameters,
+				clickThrough: this.clickThrough,
 				data: []
 			});
 		},
 		validate: function() {
 			var messages = this.$refs.form.validate();
 			this.valid = messages.length == 0;
+		}
+	},
+	watch: {
+		drillDown: function(newValue) {
+			for (var i = 0; i < this.reportsWithInput.length; i++) {
+				if (this.reportsWithInput[i].name == newValue) {
+					for (var j = 0; j < this.reportsWithInput[i].parameters.length; j++) {
+						this.drillDownParameters.push({
+							key: this.reportsWithInput[i].parameters[j].key,
+							value: null
+						});
+					}
+				}
+			}
 		}
 	}
 });

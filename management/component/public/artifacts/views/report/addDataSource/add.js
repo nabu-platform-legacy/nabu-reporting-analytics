@@ -3,14 +3,16 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 	services: ["analytics.data"],
 	data: function() {
 		return {
+			// passed in
+			entry: null,
 			name: null,
 			valid: false, 
 			source: null,
 			orderBy: [],
 			limit: 10,
-			named: true,
+			named: null,
 			properties: [],
-			limited: true,
+			limited: null,
 			connectionId: null,
 			groupBy: null,
 			// properties for this source that are bound to report-level properties
@@ -30,12 +32,16 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 				this.boundProperties.push(property);
 			}
 		}
+		// only tabular data is limited
+		this.limited = this.entry.type == "TABULAR";
+		// only series data supports multiple data series which could require names
+		this.named = this.entry.type == "SERIES";
 	},
 	computed: {
 		filteredSources: function() {
 			var filtered = [];
 			for (var i = 0; i < this.$services.analytics.data.sources.length; i++) {
-				if (this.$services.analytics.data.sources[i].types.indexOf(this.type) >= 0) {
+				if (this.$services.analytics.data.sources[i].types.indexOf(this.entry.type) >= 0) {
 					filtered.push(this.$services.analytics.data.sources[i]);
 				}
 			}
@@ -97,7 +103,7 @@ application.views.AnalyticsReportAddDataSource = Vue.extend({
 					this.properties.push(object);
 				}
 			}
-			if (newValue.output && (this.type == "FACT" || this.type == "TABULAR")) {
+			if (newValue.output && (this.entry.type == "FACT" || this.entry.type == "TABULAR")) {
 				for (var i = 0; i < newValue.output.length; i++) {
 					this.hide.push({
 						key: newValue.output[i].name,

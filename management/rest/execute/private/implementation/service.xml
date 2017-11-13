@@ -1,13 +1,17 @@
 <sequence xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" disabled="false" id="25cb00d4-5e48-46f2-ba4f-dea65c5f039e">
 	<steps xsi:type="be.nabu.libs.services.vm.step.Map" disabled="false" id="7d782f8a-39e6-42a6-aa2b-6bee9540bbd2">
-		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="faecd898-b54e-48cc-b770-2ebc85145034" serviceId="nabu.reporting.analytics.Services.runAll" resultName="result0c003c456f6d4115892c0bffabc9799c" invocationOrder="0" temporaryMapping="true" y="38" x="61">
-			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="ed75b3e9-d601-4fbd-8aba-2fc67cb8f9ab" fixedValue="false" mask="false" optional="false">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Invoke" disabled="false" id="faecd898-b54e-48cc-b770-2ebc85145034" invocationOrder="0" temporaryMapping="true" serviceId="nabu.reporting.analytics.Services.runAll" resultName="result0c003c456f6d4115892c0bffabc9799c" y="38" x="61">
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="ed75b3e9-d601-4fbd-8aba-2fc67cb8f9ab" optional="false" fixedValue="false" mask="false">
 				<from>input/content/dataSets</from>
 				<to>dataSets</to>
 			</steps>
+			<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="577889dd-159e-4fb0-9dea-b5b3b84106c2" optional="false" fixedValue="false" mask="false">
+				<from>input/configuration/executorServiceId</from>
+				<to>executorServiceId</to>
+			</steps>
 			<asynchronous>false</asynchronous>
 		</steps>
-		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="c3fde1ad-45b3-4cb8-8520-95457ef8c5ff" fixedValue="false" mask="false" optional="false">
+		<steps xsi:type="be.nabu.libs.services.vm.step.Link" disabled="false" id="c3fde1ad-45b3-4cb8-8520-95457ef8c5ff" optional="false" fixedValue="false" mask="false">
 			<from>result0c003c456f6d4115892c0bffabc9799c/results</from>
 			<to>output/content/resultSets</to>
 		</steps>

@@ -2,27 +2,28 @@
 	<div class="analyticsReport" :class="{'editing': editing}">
 		<div class="page-menu">
 			<h1 class="title">{{ report.name }}</h1>
-			<button v-if="!editing && editable" class="info" @click="editing = true"><span class="n-icon n-icon-pencil"></span>Edit</button>
-			<button v-if="!editing" ref="copier"><span class="n-icon n-icon-clipboard"></span>Copy to Clipboard</button>
+			<button v-if="!readOnly && !editing && editable" class="info" @click="editing = true"><span class="n-icon n-icon-pencil"></span>Edit</button>
+			<button v-if="!readOnly && !editing" ref="copier"><span class="n-icon n-icon-clipboard"></span>Copy to Clipboard</button>
 			<button v-if="editing" class="info" @click="addRow"><span class="n-icon n-icon-plus"></span>Add Row</button>
 			<button v-if="editing" class="success" @click="save"><span class="n-icon n-icon-save"></span>Save</button>
 			<button v-if="editing" @click="cancel"><span class="n-icon n-icon-times"></span>Cancel</button>
 		</div>
-		<div v-for="row in report.rows" class="row" :class="'row-' + (row.entries.length + (report.rows.indexOf(row) == 0 && report.parameters && report.parameters.length ? 1 : 0))">
-			<section class="parameters card" v-if="report.rows.indexOf(row) == 0 && (editing || (report.parameters && report.parameters.length))">
+		<div v-for="row in report.rows" class="row" :class="'row-' + (row.entries.length + (report.rows.indexOf(row) == 0 && hasVisibleParameters(report) ? 1 : 0))">
+			<section class="parameters card" v-if="report.rows.indexOf(row) == 0 && (editing || hasVisibleParameters(report))">
 				<h2>Parameters</h2>
 				<div class="container">
-					<div class="property" v-for="property in report.parameters">
+					<div class="property" v-for="property in report.parameters" v-if="editing || !property.hide">
 						<n-form-text :label="property.key" v-model="property.value" v-timeout:input="update"/>
 						<button v-if="editing" class="delete" @click="deleteProperty(property)"></button>
+						<n-form-switch v-if="editing" v-model="property.hide" label="Hide"/>
 					</div>
 					<div class="actions" v-if="editing">
 						<button class="info" @click="addProperty"><span class="n-icon n-icon-plus"></span>Add Property</button>
 					</div>
 				</div>
 			</section>
-			<div v-for="entry in row.entries" class="card" :class="'type-' + entry.type">
-				<h2 v-auto-close="function() { toggleFilter(entry, false) }">
+			<div v-for="entry in row.entries" class="card" :class="'type-' + entry.type + ' sub-type-' + entry.subType">
+				<h2 v-auto-close="function() { toggleFilter(entry, false) }" :class="{ 'empty': !entry.name }">
 					<div class="download">
 						<span class="n-icon n-icon-refresh" @click="refresh(entry)"></span>
 						<span class="n-icon n-icon-search" @click="toggleFilter(entry)" v-if="entry.data && entry.data.length && entry.data[0].parameters && entry.data[0].parameters.length && (!entry.data[0].boundParameters || amountOfBound(entry.data[0]) < entry.data[0].parameters.length)"></span>
@@ -38,6 +39,7 @@
 						<n-form-text v-if="!isBound(entry, parameter)" v-timeout:input="function() { loadPage(entry.data[0], 0, true) }" v-for="parameter in entry.data[0].parameters" v-model="parameter.value" :label="parameter.key" :required="!parameter.optional" />
 					</div>
 					<n-form-text v-if="editing || entry.description" class="detail" :edit="editing" v-model="entry.description"/>
+					<n-form-switch label="Auto Reload" v-model="entry.autoreload" v-if="editing"/>
 				</h2>
 				
 				<div v-if="entry.type == 'TABULAR'" class="entry-table">
@@ -45,7 +47,7 @@
 						<thead>
 							<tr>
 								<td @click="sort(data, key)" 
-									v-for="key in Object.keys(data.resultSet.results[0])" v-if="!isHidden(data, key)"><span>{{ key }}</span>
+									v-for="key in keys(data.resultSet)" v-if="!isHidden(data, key)"><span>{{ key }}</span>
 										<span class="n-icon n-icon-sort-asc" v-if="data.orderBy.indexOf(key) >= 0"></span>
 										<span class="n-icon n-icon-sort-desc" v-if="data.orderBy.indexOf(key + ' desc') >= 0"></span>
 								</td>
@@ -53,7 +55,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="result in data.resultSet.results" :class="{ 'clickable': entry.drillDown }">
-								<td v-for="key in Object.keys(result)" v-if="!isHidden(data, key)" @click="drillDown(entry, result)" :class="{'good': entry.colorize && isGood(result[key]), 'bad': entry.colorize && isBad(result[key])}">{{ result[key] }}</td>
+								<td v-for="key in keys(data.resultSet)" v-if="!isHidden(data, key)" :title="result[key]" @click="drillDown(entry, result)" :class="{'good': entry.colorize && isGood(result[key]), 'bad': entry.colorize && isBad(result[key])}">{{ interpret(entry, result[key]) }}</td>
 							</tr>
 						</tbody>
 					</table>
@@ -62,9 +64,13 @@
 						<n-paging :value="entry.data[0].resultSet.page.current" :total="entry.data[0].resultSet.page.total" :load="loadPage.bind(this, entry.data[0])"/>
 					</div>
 					<div class="actions" v-if="editing">
-						<n-form-section>
-							<n-form-switch v-model="entry.colorize" label="Colorize" :edit="true"/>
-						</n-form-section>
+						<n-form class="layout1">
+							<n-form-section>
+								<n-form-switch v-model="entry.colorize" label="Colorize" :edit="true"/>
+								<n-form-switch v-model="entry.parseDates" label="Parse Dates" :edit="true"/>
+								<n-form-text v-model="entry.crop" label="Crop Size" :edit="true"/>
+							</n-form-section>
+						</n-form>
 						<button class="info" @click="addDataSource(entry, true)">Set Data Source</button>
 					</div>
 				</div>
@@ -76,8 +82,9 @@
 								<n-form-switch v-model="entry.showAxisTitle" label="Show Axis Title" :edit="true"/>
 								<n-form-switch v-model="entry.showLegend" label="Show Legend" :edit="true"/>
 								<n-form-switch v-model="entry.showDots" label="Show Dots" :edit="true"/>
+								<n-form-switch v-model="entry.showArea" v-if="entry.subType == 'LINE'" label="Show Area" :edit="true"/>
 								<n-form-switch v-model="entry.angleLabels" label="Angle Labels" :edit="true"/>
-								<n-form-combo v-model="entry.formatter" label="Label Formatter (X)" :items="['date', 'dateTime', 'time']"/>
+								<n-form-combo v-model="entry.formatter" label="Label Formatter (X)" :items="['date', 'dateTime', 'time', 'dateTime2' ]"/>
 							</n-form-section>
 						</n-form>
 						<button class="info" @click="addDataSource(entry).then(function() { entry.drawn = false })">Add Data Source</button>
@@ -90,8 +97,9 @@
 							<n-form-section>
 								<n-form-switch v-model="entry.showAxisTitle" label="Show Axis Title" :edit="true"/>
 								<n-form-switch v-model="entry.showLegend" label="Show Legend" :edit="true"/>
+								<n-form-switch v-model="entry.showArea" label="Show Area" :edit="true"/>
 								<n-form-switch v-model="entry.angleLabels" label="Angle Labels" :edit="true"/>
-								<n-form-combo v-model="entry.formatter" label="Label Formatter (X)" :items="['date', 'dateTime', 'time']"/>
+								<n-form-combo v-model="entry.formatter" label="Label Formatter (X)" :items="['date', 'dateTime', 'time', 'dateTime2']"/>
 							</n-form-section>
 						</n-form>
 						<button class="info" @click="addDataSource(entry, true, false).then(function() { entry.drawn = false })">Set Data Source</button>
