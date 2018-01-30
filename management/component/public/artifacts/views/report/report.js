@@ -145,6 +145,11 @@ application.views.AnalyticsReport = Vue.extend({
 					return this.formatDate(new Date(value));
 				}
 			}
+			if (typeof(value) == "string" && entry.parseLinks) {
+				if (value.indexOf("http://") == 0 || value.indexOf("https://") == 0) {
+					return "<a target='_blank' href='" + value + "'>" + value.replace(/http[s]*:\/\/([^/]+).*/, "$1") + "</a>";
+				}
+			}
 			if (typeof(value) == "string" && entry.crop) {
 				if (value.length > entry.crop) {
 					return value.substring(0, entry.crop) + "...";
@@ -191,6 +196,9 @@ application.views.AnalyticsReport = Vue.extend({
 						}
 						if (typeof(entry.crop) == "undefined") {
 							Vue.set(entry, "crop", null);
+						}
+						if (typeof(entry.parseLinks) == "undefined") {
+							Vue.set(entry, "parseLinks", false);
 						}
 						if (entry.data) {
 							nabu.utils.arrays.merge(inputs, entry.data);

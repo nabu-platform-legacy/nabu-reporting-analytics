@@ -55,7 +55,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="result in data.resultSet.results" :class="{ 'clickable': entry.drillDown }">
-								<td v-for="key in keys(data.resultSet)" v-if="!isHidden(data, key)" :title="result[key]" @click="drillDown(entry, result)" :class="{'good': entry.colorize && isGood(result[key]), 'bad': entry.colorize && isBad(result[key])}">{{ interpret(entry, result[key]) }}</td>
+								<td v-for="key in keys(data.resultSet)" v-if="!isHidden(data, key)" :title="result[key]" @click="drillDown(entry, result)" :class="{'good': entry.colorize && isGood(result[key]), 'bad': entry.colorize && isBad(result[key])}" v-html="interpret(entry, result[key])"></td>
 							</tr>
 						</tbody>
 					</table>
@@ -68,6 +68,7 @@
 							<n-form-section>
 								<n-form-switch v-model="entry.colorize" label="Colorize" :edit="true"/>
 								<n-form-switch v-model="entry.parseDates" label="Parse Dates" :edit="true"/>
+								<n-form-switch v-model="entry.parseLinks" label="Parse Links" :edit="true"/>
 								<n-form-text v-model="entry.crop" label="Crop Size" :edit="true"/>
 							</n-form-section>
 						</n-form>
