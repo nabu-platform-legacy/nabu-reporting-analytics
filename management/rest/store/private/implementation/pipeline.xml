@@ -1,4 +1,4 @@
-<structure interface="$self:api" name="pipeline">
+<structure interface="nabu.reporting.analytics.management.rest.store:api" name="pipeline">
     <structure name="input"/>
     <structure name="output"/>
     <structure definition="nabu.reporting.analytics.types.ResultSet" maxOccurs="unbounded" minOccurs="0" name="results"/>
